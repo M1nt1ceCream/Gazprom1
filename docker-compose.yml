@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-obsbay}
+      POSTGRES_USER: ${POSTGRES_USER:-obsbay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-obsbay} -d ${POSTGRES_DB:-obsbay}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.28.2
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GEOSERVER_ADMIN_USER: ${GEOSERVER_ADMIN_USER:-admin}
+      GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_ADMIN_PASSWORD:?Set GEOSERVER_ADMIN_PASSWORD in .env}
+      SKIP_DEMO_DATA: "true"
+      EXTRA_JAVA_OPTS: -Xms512m -Xmx2g
+      PROXY_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8080}/geoserver
+    ports:
+      - "${GEOSERVER_BIND_ADDRESS:-127.0.0.1}:${GEOSERVER_PORT:-8081}:8080"
+    volumes:
+      - geoserver_data:/opt/geoserver_data
+
+  geoserver-config:
+    build: ./geoserver
+    restart: on-failure
+    depends_on:
+      - geoserver
+      - db
+    environment:
+      GEOSERVER_URL: http://geoserver:8080/geoserver
+      GEOSERVER_ADMIN_USER: ${GEOSERVER_ADMIN_USER:-admin}
+      GEOSERVER_ADMIN_PASSWORD: ${GEOSERVER_ADMIN_PASSWORD:?Set GEOSERVER_ADMIN_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-obsbay}
+      POSTGRES_USER: ${POSTGRES_USER:-obsbay}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+
+  poller:
+    build: ./poller
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-obsbay}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-obsbay}
+      POLL_INTERVAL_SECONDS: ${POLL_INTERVAL_SECONDS:-21600}
+      OVERPASS_URL: ${OVERPASS_URL:-https://overpass-api.de/api/interpreter}
+      OVERPASS_QUERY_FILE: ${OVERPASS_QUERY_FILE:-/app/config/overpass.ql}
+      BBOX_SOUTH: ${BBOX_SOUTH:-68.0}
+      BBOX_WEST: ${BBOX_WEST:-66.0}
+      BBOX_NORTH: ${BBOX_NORTH:-74.5}
+      BBOX_EAST: ${BBOX_EAST:-74.0}
+    volumes:
+      - ./config:/app/config:ro
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - geoserver
+      - poller
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+
+volumes:
+  postgres_data:
+  geoserver_data:
