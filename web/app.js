@@ -54,6 +54,15 @@ const refreshButton = document.getElementById('refresh');
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('map-search');
 const datalist = document.getElementById('feature-options');
+const sidebarToggle = document.getElementById('layers-toggle');
+const sidebar = document.getElementById('map-layers');
+
+sidebarToggle.addEventListener('click', () => {
+  const open = !sidebar.classList.contains('is-open');
+  sidebar.classList.toggle('is-open', open);
+  sidebarToggle.setAttribute('aria-expanded', String(open));
+  sidebarToggle.querySelector('span').textContent = open ? 'Закрыть' : 'Слои';
+});
 
 function setStatus(message, kind = '') {
   status.textContent = message;
