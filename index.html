@@ -3,40 +3,81 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1821">
+  <meta name="theme-color" content="#ffffff">
   <meta name="description" content="Интерактивная карта Обской губы на OpenStreetMap с объектами из открытых данных OSM.">
-  <title>Обская губа — интерактивная карта</title>
+  <title>Обская губа — геоинформационная карта</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="На главную">
-      <span class="brand-mark">ОГ</span>
-      <span><b>ОБСКАЯ ГУБА</b><small>Геоинформационная карта</small></span>
+    <a class="brand" href="#" aria-label="Обская губа — на главную">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M6 24.5 12.3 7l5.1 11 3.1-7.2L27 24.5H6Z"/><path d="m12.3 7 5.1 11 3.1-7.2"/></svg>
+      </span>
+      <span class="brand-copy"><b>Обская губа</b><small>Геоинформационная карта</small></span>
     </a>
-    <div class="top-meta"><span class="live-dot"></span><span>OPENSTREETMAP</span><span class="divider"></span><span>ОТКРЫТЫЕ ДАННЫЕ</span></div>
-    <button id="refresh" class="refresh"><span>↻</span> Обновить данные</button>
+
+    <form id="search-form" class="search" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.4 4.4"/></svg>
+      <input id="map-search" type="search" list="feature-options" placeholder="Поиск по объектам карты" aria-label="Поиск по объектам карты" autocomplete="off">
+      <datalist id="feature-options"></datalist>
+      <button type="submit" aria-label="Найти на карте">Найти</button>
+    </form>
+
+    <div class="header-actions">
+      <span class="header-source"><i></i> Данные OpenStreetMap</span>
+      <button id="refresh" class="refresh" type="button" title="Обновить данные из OpenStreetMap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.7 10a7.5 7.5 0 0 1 13-3L20 12M4 17v-5h5m10.3 2a7.5 7.5 0 0 1-13 3L4 12"/></svg>
+        <span>Обновить</span>
+      </button>
+    </div>
   </header>
-  <main>
-    <aside class="panel">
-      <div class="panel-heading"><div><div class="eyebrow">РАЙОН РАБОТ</div><h1>Обская губа</h1></div><span class="crosshair">⌖</span></div>
-      <p class="intro">Интерактивная карта побережья и объектов Обской губы на открытых картографических данных.</p>
-      <div class="stats"><div><span class="stat-value" id="feature-count">—</span><span class="stat-label">объектов в районе</span></div><div><span class="stat-value">OSM</span><span class="stat-label">источник данных</span></div></div>
-      <div class="section-label">СЛОИ КАРТЫ</div>
-      <label class="layer-row"><input id="osm-toggle" type="checkbox" checked><span class="swatch osm"></span><span class="layer-name">OpenStreetMap</span><span class="layer-kind">подложка</span></label>
-      <label class="layer-row"><input id="data-toggle" type="checkbox" checked><span class="swatch data"></span><span class="layer-name">Места и инфраструктура</span><span class="layer-kind">OSM</span></label>
-      <div class="section-label legend-label">ТИПЫ ОБЪЕКТОВ</div>
-      <div class="legend"><div><i class="legend-dot amber"></i>Порты, причалы и паромы</div><div><i class="legend-dot teal"></i>Населённые пункты</div></div>
-      <div class="note"><span class="note-icon">i</span><p>Объекты загружаются из OpenStreetMap. Они отражают карту, а не оперативные данные о погоде, судах или ледовой обстановке.</p></div>
-      <div class="panel-footer"><span class="status-dot"></span><span id="status">Загрузка объектов</span><span class="updated" id="updated"></span></div>
+
+  <main class="workspace">
+    <aside class="sidebar" aria-label="Слои и информация карты">
+      <div class="sidebar-head">
+        <div class="crumb"><span>КАРТОГРАФИЧЕСКИЙ ПОРТАЛ</span><span class="crumb-sep">/</span><span>ОБСКАЯ ГУБА</span></div>
+        <h1>Слои карты</h1>
+      </div>
+
+      <section class="layer-section">
+        <h2>Картографическая основа</h2>
+        <label class="base-layer">
+          <input id="osm-toggle" type="checkbox" checked>
+          <span class="radio-ui"></span>
+          <span class="base-preview" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span class="base-copy"><b>OpenStreetMap</b><small>Стандартная карта</small></span>
+        </label>
+      </section>
+
+      <section class="layer-section objects-section">
+        <div class="section-heading"><h2>Объекты Обской губы</h2><span id="feature-count" class="count-badge">—</span></div>
+        <label class="layer-row"><input class="object-toggle" data-layer="settlements" type="checkbox" checked><i class="symbol settlement"></i><span>Населённые пункты</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="harbours" type="checkbox" checked><i class="symbol harbour"></i><span>Порты и гавани</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="piers" type="checkbox" checked><i class="symbol pier"></i><span>Причалы</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="ferries" type="checkbox" checked><i class="symbol ferry"></i><span>Паромные переправы</span></label>
+      </section>
+
+      <section class="data-info">
+        <h2>Сведения о данных</h2>
+        <dl><div><dt>Источник</dt><dd>OpenStreetMap</dd></div><div><dt>Обновлено</dt><dd id="updated">—</dd></div></dl>
+        <p>Информация зависит от полноты открытой карты и доступности сервиса данных.</p>
+      </section>
+
+      <div class="sidebar-status"><i class="status-dot"></i><span id="status">Загрузка объектов</span></div>
     </aside>
+
     <section class="map-wrap" aria-label="Карта Обской губы">
       <div id="map"></div>
-      <div class="map-coords"><span class="coord-icon">⌖</span><span id="coords">71.50° N&nbsp;&nbsp; 72.00° E</span></div>
-      <button id="home" class="home-button" title="К Обской губе">⌖</button>
+      <div class="map-title"><b>Обская губа</b><span>Ямало-Ненецкий автономный округ</span></div>
+      <button id="home" class="home-button" type="button" title="Показать Обскую губу" aria-label="Показать Обскую губу">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/></svg>
+      </button>
+      <div class="map-coords"><span id="coords">71.50° с. ш. &nbsp; 72.00° в. д.</span><span class="coord-divider"></span><span id="map-scale">Масштаб 1:—</span></div>
     </section>
   </main>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="/app.js"></script>
 </body>
