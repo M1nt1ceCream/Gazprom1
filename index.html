@@ -4,18 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="Интерактивная карта Обской губы на OpenStreetMap с объектами из открытых данных OSM.">
-  <title>Обская губа — геоинформационная карта</title>
+  <meta name="description" content="Газпром 1 — интерактивная карта Обской губы на OpenStreetMap с объектами из открытых данных OSM.">
+  <title>Газпром 1 — интерактивная карта</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Display:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Обская губа — на главную">
+    <a class="brand" href="#" aria-label="Газпром 1 — на главную">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 32 32"><path d="M6 24.5 12.3 7l5.1 11 3.1-7.2L27 24.5H6Z"/><path d="m12.3 7 5.1 11 3.1-7.2"/></svg>
       </span>
-      <span class="brand-copy"><b>Обская губа</b><small>Геоинформационная карта</small></span>
+      <span class="brand-copy"><b>Газпром 1</b><small>Карта Обской губы</small></span>
     </a>
 
     <form id="search-form" class="search" role="search">
@@ -37,7 +40,7 @@
   <main class="workspace">
     <aside id="map-layers" class="sidebar" aria-label="Слои и информация карты">
       <div class="sidebar-head">
-        <div class="crumb"><span>КАРТОГРАФИЧЕСКИЙ ПОРТАЛ</span><span class="crumb-sep">/</span><span>ОБСКАЯ ГУБА</span></div>
+        <div class="crumb"><span>ГЕОПОРТАЛ</span><span class="crumb-sep">/</span><span>ГАЗПРОМ 1</span></div>
         <h1>Слои карты</h1>
       </div>
 
@@ -52,7 +55,7 @@
       </section>
 
       <section class="layer-section objects-section">
-        <div class="section-heading"><h2>Объекты Обской губы</h2><span id="feature-count" class="count-badge">—</span></div>
+        <div class="section-heading"><h2>Объекты карты</h2><span id="feature-count" class="count-badge">—</span></div>
         <label class="layer-row"><input class="object-toggle" data-layer="settlements" type="checkbox" checked><i class="symbol settlement"></i><span>Населённые пункты</span></label>
         <label class="layer-row"><input class="object-toggle" data-layer="harbours" type="checkbox" checked><i class="symbol harbour"></i><span>Порты и гавани</span></label>
         <label class="layer-row"><input class="object-toggle" data-layer="piers" type="checkbox" checked><i class="symbol pier"></i><span>Причалы</span></label>
@@ -68,9 +71,9 @@
       <div class="sidebar-status"><i class="status-dot"></i><span id="status">Загрузка объектов</span></div>
     </aside>
 
-    <section class="map-wrap" aria-label="Карта Обской губы">
+    <section class="map-wrap" aria-label="Карта Газпром 1 — Обская губа">
       <div id="map"></div>
-      <div class="map-title"><b>Обская губа</b><span>Ямало-Ненецкий автономный округ</span></div>
+      <div class="map-title"><b>Газпром 1</b><span>Обская губа · Ямало-Ненецкий автономный округ</span></div>
       <button id="layers-toggle" class="layers-button" type="button" aria-controls="map-layers" aria-expanded="false">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4-9 4-9-4Zm0 5 9 4 9-4M3 17l9 4 9-4"/></svg>
         <span>Слои</span>
