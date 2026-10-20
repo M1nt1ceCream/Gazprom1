@@ -35,7 +35,7 @@
   </header>
 
   <main class="workspace">
-    <aside class="sidebar" aria-label="Слои и информация карты">
+    <aside id="map-layers" class="sidebar" aria-label="Слои и информация карты">
       <div class="sidebar-head">
         <div class="crumb"><span>КАРТОГРАФИЧЕСКИЙ ПОРТАЛ</span><span class="crumb-sep">/</span><span>ОБСКАЯ ГУБА</span></div>
         <h1>Слои карты</h1>
@@ -71,6 +71,10 @@
     <section class="map-wrap" aria-label="Карта Обской губы">
       <div id="map"></div>
       <div class="map-title"><b>Обская губа</b><span>Ямало-Ненецкий автономный округ</span></div>
+      <button id="layers-toggle" class="layers-button" type="button" aria-controls="map-layers" aria-expanded="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4-9 4-9-4Zm0 5 9 4 9-4M3 17l9 4 9-4"/></svg>
+        <span>Слои</span>
+      </button>
       <button id="home" class="home-button" type="button" title="Показать Обскую губу" aria-label="Показать Обскую губу">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/></svg>
       </button>
