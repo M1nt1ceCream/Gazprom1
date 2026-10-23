@@ -16,12 +16,15 @@
   };
 
   // Отделы. Наполнение кабинетов уточняется: у отдела можно задать
-  // lead — подзаголовок кабинета и widgets — карточки разделов [{title, text}]
+  // lead — подзаголовок кабинета, widgets — карточки разделов [{title, text}],
+  // cloud — картинка для облака точек справа в кабинете: {src, leftBoost — во сколько раз
+  // поднять яркость у левого края, если объект на картинке слева темнее, exposure — общий
+  // множитель яркости, contrast — сделать грани чётче, а светлые точки ярче}
   const departments = {
-    engineering:{name:'Инженерно-технический'},
-    kmns:{name:'КМНС'},
-    finance:{name:'Финансово-экономический'},
-    ecology:{name:'Экология'}
+    engineering:{name:'Инженерно-технический', cloud:{src:'assets/departments/engineering.jpg', leftBoost:2.4}},
+    kmns:{name:'КМНС', cloud:{src:'assets/departments/kmns.jpg'}},
+    finance:{name:'Финансово-экономический', cloud:{src:'assets/departments/economy.jpg'}},
+    ecology:{name:'Экология', cloud:{src:'assets/departments/ecology.jpg'}}
   };
 
   // Стартовый администратор: 1cem1nt / 1cem1nt

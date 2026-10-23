@@ -13,6 +13,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-account">
+  <canvas class="cloud cloud-bottom" data-cloud-src="assets/backgrounds/common.png" data-cloud-motion="wave" data-cloud-fit="cover" data-cloud-aspect="image" data-cloud-point-scale="0.75" aria-hidden="true"></canvas>
+  <canvas class="cloud cloud-side" data-cloud-motion="breathe" data-cloud-fit="contain" aria-hidden="true"></canvas>
+
   <header class="topbar">
     <div class="topbar-start">
       <a class="brand" href="./" aria-label="Газпром 1 — на главную">
@@ -188,6 +191,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="ui.js"></script>
+  <script src="pointcloud.js"></script>
   <script src="account.js"></script>
 </body>
 </html>
