@@ -9,6 +9,7 @@ const usersBody = document.getElementById('users-body');
 const deptSelect = document.getElementById('dept-select');
 const pendingCount = document.getElementById('pending-count');
 const menuPill = document.querySelector('.menu-pill');
+const sideCloud = document.querySelector('.cloud-side');
 const toast = document.getElementById('toast');
 const dateFormat = new Intl.DateTimeFormat('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'});
 let toastTimer;
@@ -74,6 +75,12 @@ function refreshSelf() {
   applyAccess();
   renderIdentity();
   fillProfile();
+}
+
+// Справа облако точек из картинки отдела; у отдела без картинки точки рассеиваются
+function showDepartmentCloud(key) {
+  const {src = null, ...options} = (Auth.departments[key] && Auth.departments[key].cloud) || {};
+  if (sideCloud && sideCloud.cloud) sideCloud.cloud.show(src, options);
 }
 
 function renderDepartment(key) {
@@ -251,7 +258,10 @@ userForm.addEventListener('submit', async e => {
   showToast('Пользователь добавлен');
 });
 
-deptSelect.addEventListener('change', () => renderDepartment(deptSelect.value));
+deptSelect.addEventListener('change', () => {
+  renderDepartment(deptSelect.value);
+  showDepartmentCloud(deptSelect.value);
+});
 
 document.getElementById('logout').addEventListener('click', () => {
   Auth.logout();
@@ -271,4 +281,5 @@ if (user) {
   fillProfile();
   updatePendingCount();
   showSection(location.hash.slice(1));
+  showDepartmentCloud(user.department);
 }

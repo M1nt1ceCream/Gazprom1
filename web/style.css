@@ -22,7 +22,6 @@
   --line: #0b1e3f14;
   --control-border: #234f8638;
   --accent: #234f86;
-  --accent-hover: #1b3f6c;
   --accent-fill: #2e5f9c;
   --accent-soft: #234f8612;
   --accent-ring: #234f8640;
@@ -284,28 +283,21 @@ select {
   color: var(--text-faint);
 }
 
-.search button {
+/* Стеклянная кнопка .btn, ужатая под поле поиска; не приподнимается, чтобы не выпрыгивать из поля */
+.search .btn {
+  flex: 0 0 auto;
   height: 32px;
   margin-right: 4px;
   padding: 0 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0;
   border-radius: 9px;
-  background: var(--accent);
-  color: var(--box);
   font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color .25s var(--ease), transform .2s var(--ease);
 }
 
-.search button:hover {
-  background: var(--accent-hover);
+.search .btn:not(:disabled):hover {
+  transform: none;
 }
 
-.search button:active {
+.search .btn:not(:disabled):active {
   transform: scale(.96);
 }
 
@@ -1552,8 +1544,48 @@ select {
   color: var(--text);
 }
 
+/* Облако точек (pointcloud.js) лежит под боксами кабинета.
+   Нижняя зона — общая панорама на всю ширину экрана, прижата к низу; высота по пропорции
+   картинки (pointcloud.js ставит aspect-ratio по data-cloud-aspect="image"), но не выше окна */
+.cloud {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cloud-bottom {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  max-height: 100vh;
+  aspect-ratio: 8 / 3;
+  -webkit-mask-image: linear-gradient(to top, #000 80%, transparent);
+  mask-image: linear-gradient(to top, #000 80%, transparent);
+}
+
+/* Правая зона — картинка отдела справа от рабочей колонки (1400px + отступы 12px), приподнята
+   на 80px при той же высоте (верх уходит под шапку, там у картинок пустое поле).
+   Холст — замещаемый элемент и не тянется между left/right, поэтому размеры заданы явно */
+.cloud-side {
+  top: calc(var(--stack-top) - 80px);
+  left: calc(var(--gap) + var(--panel-w) + 1424px);
+  width: calc(100% - 2 * var(--gap) - var(--panel-w) - 1424px);
+  height: calc(100% - var(--stack-top) - var(--gap));
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* Уже ~300px правой зоне не хватает места: облако отдела скрыто и даже не загружается */
+@media (max-width: 2115px) {
+  .cloud-side {
+    display: none;
+  }
+}
+
 /* Панель тянется до низа центральной колонки, меню внутри липнет при прокрутке */
 .account-layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: var(--panel-w) minmax(0, 1400px);
   gap: 12px;
@@ -2139,7 +2171,7 @@ select {
     font-size: 16px;
   }
 
-  .search button {
+  .search .btn {
     width: 30px;
     height: 30px;
     padding: 0;
@@ -2260,6 +2292,10 @@ select {
 
   .account-layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cloud {
+    display: none;
   }
 
   .account-menu-links {
