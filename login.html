@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-auth">
+  <canvas class="cloud cloud-login" data-cloud-src="assets/backgrounds/common%201.jpg" data-cloud-motion="wave" data-cloud-fit="cover" data-cloud-invert data-cloud-point-scale="0.75" aria-hidden="true"></canvas>
+
   <main class="auth">
     <div class="glass auth-card">
       <div class="panel-box auth-box">
@@ -25,7 +27,6 @@
           <span class="tabs-pill" aria-hidden="true"></span>
           <button id="tab-login" type="button" role="tab" data-tab="login" aria-selected="true" aria-controls="panel-login">Вход</button>
           <button id="tab-register" type="button" role="tab" data-tab="register" aria-selected="false" aria-controls="panel-register">Регистрация</button>
-          <button id="tab-reset" type="button" role="tab" data-tab="reset" aria-selected="false" aria-controls="panel-reset">Забыли пароль?</button>
         </div>
 
         <form id="panel-login" class="form tab-panel" role="tabpanel" aria-labelledby="tab-login" novalidate>
@@ -46,6 +47,7 @@
               </button>
             </span>
           </label>
+          <button id="forgot-link" class="link-button forgot-link" type="button">Забыли пароль?</button>
           <p id="login-message" class="form-message" role="alert"></p>
           <button class="btn btn-block" type="submit">Войти</button>
         </form>
@@ -84,7 +86,7 @@
           <button class="btn btn-block" type="submit">Зарегистрироваться</button>
         </form>
 
-        <div id="panel-reset" class="tab-panel" role="tabpanel" aria-labelledby="tab-reset" hidden>
+        <div id="panel-reset" class="tab-panel" role="region" aria-label="Восстановление пароля" hidden>
           <form id="reset-find" class="form" novalidate>
             <div>
               <h1>Восстановление пароля</h1>
@@ -124,6 +126,7 @@
           </form>
 
           <p class="form-note">Демо-режим: письмо не отправляется, пароль меняется сразу.</p>
+          <button id="back-to-login" class="link-button back-link" type="button">← Вернуться ко входу</button>
         </div>
       </div>
     </div>
@@ -131,6 +134,7 @@
 
   <script src="auth.js"></script>
   <script src="ui.js"></script>
+  <script src="pointcloud.js"></script>
   <script src="login.js"></script>
 </body>
 </html>
