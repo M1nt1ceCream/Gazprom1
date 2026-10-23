@@ -56,6 +56,13 @@ const searchInput = document.getElementById('map-search');
 const datalist = document.getElementById('feature-options');
 const sidebarToggle = document.getElementById('layers-toggle');
 const sidebar = document.getElementById('map-layers');
+const userChip = document.getElementById('user-chip');
+const currentUser = Auth.currentUser();
+
+if (currentUser) {
+  userChip.querySelector('.avatar').textContent = Auth.initials(currentUser);
+  userChip.title = `${Auth.fullName(currentUser)} — личный кабинет`;
+}
 
 sidebarToggle.addEventListener('click', () => {
   const open = !sidebar.classList.contains('is-open');
