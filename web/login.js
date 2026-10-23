@@ -139,3 +139,10 @@ document.getElementById('reset-back').addEventListener('click', () => {
   showResetStep('find');
   findName.focus();
 });
+
+document.getElementById('forgot-link').addEventListener('click', () => {
+  findName.value = loginName.value.trim();
+  setTab('reset');
+});
+
+document.getElementById('back-to-login').addEventListener('click', () => setTab('login'));

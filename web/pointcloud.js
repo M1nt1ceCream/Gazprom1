@@ -9,6 +9,8 @@
 //   data-cloud-fit: cover — по ширине и к низу; contain — картинка целиком по центру
 //   data-cloud-point-scale: множитель размера точек (по умолчанию 1)
 //   data-cloud-aspect="image": холст принимает пропорции картинки (высота от ширины)
+//   data-cloud-contrast / data-cloud-exposure / data-cloud-left-boost / data-cloud-invert:
+//   настройки яркости для data-cloud-src
 // Сменить картинку: canvas.cloud.show('путь', {leftBoost, exposure}) или canvas.cloud.show(null)
 (function () {
   const pointColor = [251 / 255, 251 / 255, 255 / 255];
@@ -93,8 +95,10 @@
   // сходит к 1 к середине картинки, правая половина не трогается (для объектов, тёмных слева).
   // exposure — общий множитель яркости: меньше 1 приглушает слишком светлые картинки.
   // contrast — растягивает яркость от середины: светлые грани ярче, тёмные темнее, контуры чётче.
+  // invert — инверсия яркости внутри картинки: тёмное становится плотным и ярким, чёрный фон
+  // остаётся пустым (для картинок, где главное нарисовано тёмным).
   // На точку: позиция в картинке (0..1) и данные — глубина, непрозрачность, размер
-  function samplePoints(image, count, {leftBoost = 1, exposure = 1, contrast = 1} = {}) {
+  function samplePoints(image, count, {leftBoost = 1, exposure = 1, contrast = 1, invert = false} = {}) {
     const scale = Math.sqrt(sampleArea / (image.naturalWidth * image.naturalHeight));
     const width = Math.round(image.naturalWidth * scale);
     const height = Math.round(image.naturalHeight * scale);
@@ -111,7 +115,8 @@
       const raw = (0.2126 * pixels[j] + 0.7152 * pixels[j + 1] + 0.0722 * pixels[j + 2]) / 255 * (pixels[j + 3] / 255);
       const fade = Math.max(0, 1 - (i % width) / (width * 0.55));
       const gain = 1 + (leftBoost - 1) * fade * fade * (3 - 2 * fade);
-      light[i] = raw < 0.05 ? 0 : Math.max(0.05, Math.min(1, 0.5 + (raw * gain * exposure - 0.5) * contrast));
+      const value = invert ? 1 - raw : raw;
+      light[i] = raw < 0.05 ? 0 : Math.max(0.05, Math.min(1, 0.5 + (value * gain * exposure - 0.5) * contrast));
     }
 
     const cumulative = new Float64Array(light.length);
@@ -316,7 +321,12 @@
     requestAnimationFrame(frame);
 
     canvas.cloud = {show:(src, options) => show(src, options).catch(error => console.warn('Облако точек не обновилось:', error))};
-    if (canvas.dataset.cloudSrc) canvas.cloud.show(canvas.dataset.cloudSrc);
+    const initial = {invert:canvas.dataset.cloudInvert !== undefined};
+    for (const name of ['leftBoost', 'exposure', 'contrast']) {
+      const value = parseFloat(canvas.dataset[`cloud${name[0].toUpperCase()}${name.slice(1)}`]);
+      if (value) initial[name] = value;
+    }
+    if (canvas.dataset.cloudSrc) canvas.cloud.show(canvas.dataset.cloudSrc, initial);
   }
 
   document.querySelectorAll('canvas.cloud').forEach(canvas => {
