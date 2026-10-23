@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#fbfbff">
   <meta name="description" content="Газпром 1 — интерактивная карта Обской губы на OpenStreetMap с объектами из открытых данных OSM.">
   <title>Газпром 1 — интерактивная карта</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Golos+Display:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="/style.css">
 </head>
@@ -25,7 +25,10 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.4 4.4"/></svg>
       <input id="map-search" type="search" list="feature-options" placeholder="Поиск по объектам карты" aria-label="Поиск по объектам карты" autocomplete="off">
       <datalist id="feature-options"></datalist>
-      <button type="submit" aria-label="Найти на карте">Найти</button>
+      <button type="submit" aria-label="Найти на карте">
+        <span>Найти</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+      </button>
     </form>
 
     <div class="header-actions">
@@ -39,12 +42,12 @@
 
   <main class="workspace">
     <aside id="map-layers" class="sidebar" aria-label="Слои и информация карты">
-      <div class="sidebar-head">
+      <div class="panel-box sidebar-head">
         <div class="crumb"><span>ГЕОПОРТАЛ</span><span class="crumb-sep">/</span><span>ГАЗПРОМ 1</span></div>
         <h1>Слои карты</h1>
       </div>
 
-      <section class="layer-section">
+      <section class="panel-box layer-section">
         <h2>Картографическая основа</h2>
         <label class="base-layer">
           <input id="osm-toggle" type="checkbox" checked>
@@ -54,21 +57,20 @@
         </label>
       </section>
 
-      <section class="layer-section objects-section">
+      <section class="panel-box layer-section objects-section">
         <div class="section-heading"><h2>Объекты карты</h2><span id="feature-count" class="count-badge">—</span></div>
-        <label class="layer-row"><input class="object-toggle" data-layer="settlements" type="checkbox" checked><i class="symbol settlement"></i><span>Населённые пункты</span></label>
-        <label class="layer-row"><input class="object-toggle" data-layer="harbours" type="checkbox" checked><i class="symbol harbour"></i><span>Порты и гавани</span></label>
-        <label class="layer-row"><input class="object-toggle" data-layer="piers" type="checkbox" checked><i class="symbol pier"></i><span>Причалы</span></label>
-        <label class="layer-row"><input class="object-toggle" data-layer="ferries" type="checkbox" checked><i class="symbol ferry"></i><span>Паромные переправы</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="settlements" type="checkbox" checked><span class="check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5 6.5 11.5 12.5 5"/></svg></span><i class="symbol settlement"></i><span>Населённые пункты</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="harbours" type="checkbox" checked><span class="check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5 6.5 11.5 12.5 5"/></svg></span><i class="symbol harbour"></i><span>Порты и гавани</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="piers" type="checkbox" checked><span class="check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5 6.5 11.5 12.5 5"/></svg></span><i class="symbol pier"></i><span>Причалы</span></label>
+        <label class="layer-row"><input class="object-toggle" data-layer="ferries" type="checkbox" checked><span class="check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5 6.5 11.5 12.5 5"/></svg></span><i class="symbol ferry"></i><span>Паромные переправы</span></label>
       </section>
 
-      <section class="data-info">
+      <section class="panel-box data-info">
         <h2>Сведения о данных</h2>
         <dl><div><dt>Источник</dt><dd>OpenStreetMap</dd></div><div><dt>Обновлено</dt><dd id="updated">—</dd></div></dl>
         <p>Информация зависит от полноты открытой карты и доступности сервиса данных.</p>
+        <div class="sidebar-status"><i class="status-dot"></i><span id="status">Загрузка объектов</span></div>
       </section>
-
-      <div class="sidebar-status"><i class="status-dot"></i><span id="status">Загрузка объектов</span></div>
     </aside>
 
     <section class="map-wrap" aria-label="Карта Газпром 1 — Обская губа">
