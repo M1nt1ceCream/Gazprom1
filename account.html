@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#013c81">
+  <title>Газпром 1 — личный кабинет</title>
+  <script src="auth.js"></script>
+  <script>Auth.requireUser();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-account">
+  <header class="topbar">
+    <div class="topbar-start">
+      <a class="brand" href="./" aria-label="Газпром 1 — на главную">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M6 24.5 12.3 7l5.1 11 3.1-7.2L27 24.5H6Z"/><path d="m12.3 7 5.1 11 3.1-7.2"/></svg>
+        </span>
+        <span class="brand-copy"><b>Газпром 1</b><small>Личный кабинет</small></span>
+      </a>
+
+      <nav class="topnav" aria-label="Разделы сайта">
+        <a href="./" data-access="map" hidden>Карта</a>
+        <a href="account.html" aria-current="page">Кабинет</a>
+      </nav>
+    </div>
+
+    <div class="header-actions">
+      <a id="user-chip" class="user-chip" href="#profile">
+        <span class="avatar" data-user-initials></span>
+        <span class="user-chip-copy"><b data-user-name></b><small data-user-role></small></span>
+      </a>
+      <button id="logout" class="header-button" type="button" title="Выйти из учётной записи">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>
+        <span>Выйти</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="account-layout">
+    <aside class="glass account-nav" aria-label="Разделы кабинета">
+      <div class="account-nav-inner">
+        <div class="panel-box account-card">
+          <span class="avatar avatar-lg" data-user-initials></span>
+          <div>
+            <b data-user-name></b>
+            <small data-user-department></small>
+            <span class="role-badge" data-user-role></span>
+          </div>
+        </div>
+
+        <nav class="panel-box account-menu">
+          <div class="account-menu-links">
+            <span class="menu-pill" aria-hidden="true"></span>
+            <a href="#profile" data-section-link="profile">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
+              <span>Профиль</span>
+            </a>
+            <a href="#department" data-section-link="department" data-access="department" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4M8 7h2m4 0h2M8 11h2m4 0h2"/></svg>
+              <span>Мой отдел</span>
+            </a>
+            <a href="#security" data-section-link="security">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+              <span>Безопасность</span>
+            </a>
+            <a href="#users" data-section-link="users" data-access="users" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3 3.5-4.5 6.5-4.5s5.5 1.5 6.5 4.5M16 4.5a3.5 3.5 0 0 1 0 7m2 4c1.8.6 3 2 3.5 4.5"/></svg>
+              <span>Пользователи</span>
+              <span id="pending-count" class="menu-badge" title="Заявки на подтверждение" hidden></span>
+            </a>
+          </div>
+        </nav>
+      </div>
+    </aside>
+
+    <div class="account-main">
+      <section class="account-section" data-section="profile" hidden>
+        <div class="panel-box notice" data-pending-only hidden>
+          <span class="notice-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          </span>
+          <div>
+            <h2>Заявка на рассмотрении</h2>
+            <p>Администратор назначит вам роль. После этого откроются карта и кабинет отдела.</p>
+          </div>
+        </div>
+
+        <div class="panel-box grow">
+          <div class="box-head">
+            <h1 class="section-title">Профиль</h1>
+            <p class="section-lead">Фамилия и имя видны коллегам. Отдел и роль назначает администратор.</p>
+          </div>
+          <form id="profile-form" class="form" novalidate>
+            <div class="form-grid">
+              <label class="field"><span>Фамилия</span><input class="input" name="lastName" type="text" autocomplete="family-name" required></label>
+              <label class="field"><span>Имя</span><input class="input" name="firstName" type="text" autocomplete="given-name" required></label>
+              <label class="field"><span>Логин</span><input class="input" name="login" type="text" readonly></label>
+              <label class="field"><span>Отдел</span><input class="input" name="department" type="text" readonly></label>
+              <label class="field"><span>Роль</span><input class="input" name="role" type="text" readonly></label>
+            </div>
+            <p id="profile-message" class="form-message" role="alert"></p>
+            <div class="form-actions"><button class="btn" type="submit">Сохранить</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="account-section" data-section="department" hidden>
+        <div class="panel-box dept-hero">
+          <div>
+            <span class="eyebrow">Кабинет отдела</span>
+            <h1 id="dept-name" class="section-title"></h1>
+            <p id="dept-lead" class="section-lead"></p>
+          </div>
+          <label class="field dept-preview" data-access="users" hidden>
+            <span>Просмотр как отдел</span>
+            <select id="dept-select" class="select"></select>
+          </label>
+        </div>
+        <div id="dept-widgets" class="widget-grid grow"></div>
+        <div class="panel-box" data-access="team" hidden>
+          <div class="box-head">
+            <h2 class="box-title">Сотрудники отдела</h2>
+          </div>
+          <ul id="team-list" class="team-list"></ul>
+        </div>
+      </section>
+
+      <section class="account-section" data-section="security" hidden>
+        <div class="panel-box grow">
+          <div class="box-head">
+            <h1 class="section-title">Безопасность</h1>
+            <p class="section-lead">Смена пароля для входа в геопортал.</p>
+          </div>
+          <form id="password-form" class="form form-narrow" novalidate>
+            <label class="field"><span>Текущий пароль</span><input class="input" name="current" type="password" autocomplete="current-password" required></label>
+            <label class="field"><span>Новый пароль</span><input class="input" name="password" type="password" autocomplete="new-password" required></label>
+            <label class="field"><span>Повторите новый пароль</span><input class="input" name="repeat" type="password" autocomplete="new-password" required></label>
+            <p id="password-message" class="form-message" role="alert"></p>
+            <div class="form-actions"><button class="btn" type="submit">Сменить пароль</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="account-section" data-section="users" hidden>
+        <div class="panel-box grow">
+          <div class="box-head">
+            <h1 class="section-title">Пользователи</h1>
+            <p class="section-lead">Новые регистрации — сверху. Назначьте отдел и роль — доступ и кабинет пользователя изменятся сразу.</p>
+          </div>
+          <div class="table-wrap">
+            <table class="users-table">
+              <thead><tr><th>Сотрудник</th><th>Отдел</th><th>Роль</th><th><span class="visually-hidden">Действия</span></th></tr></thead>
+              <tbody id="users-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-box">
+          <div class="box-head">
+            <h2 class="box-title">Добавить пользователя</h2>
+          </div>
+          <form id="user-form" class="form" novalidate>
+            <div class="form-grid form-grid-3">
+              <label class="field"><span>Фамилия</span><input class="input" name="lastName" type="text" required></label>
+              <label class="field"><span>Имя</span><input class="input" name="firstName" type="text" required></label>
+              <label class="field"><span>Логин</span><input class="input" name="login" type="text" autocapitalize="none" spellcheck="false" required></label>
+              <label class="field"><span>Пароль</span><input class="input" name="password" type="text" autocomplete="off" required></label>
+              <label class="field"><span>Отдел</span><select class="select" name="department"></select></label>
+              <label class="field"><span>Роль</span><select class="select" name="role"></select></label>
+            </div>
+            <p id="user-message" class="form-message" role="alert"></p>
+            <div class="form-actions">
+              <button class="btn" type="submit">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                <span>Добавить</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="ui.js"></script>
+  <script src="account.js"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#013c81">
+  <title>Газпром 1 — вход</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-auth">
+  <main class="auth">
+    <div class="glass auth-card">
+      <div class="panel-box auth-box">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M6 24.5 12.3 7l5.1 11 3.1-7.2L27 24.5H6Z"/><path d="m12.3 7 5.1 11 3.1-7.2"/></svg>
+          </span>
+          <span class="brand-copy"><b>Газпром 1</b><small>Геопортал Обской губы</small></span>
+        </div>
+
+        <div id="auth-tabs" class="tabs" role="tablist" data-active="login">
+          <span class="tabs-pill" aria-hidden="true"></span>
+          <button id="tab-login" type="button" role="tab" data-tab="login" aria-selected="true" aria-controls="panel-login">Вход</button>
+          <button id="tab-register" type="button" role="tab" data-tab="register" aria-selected="false" aria-controls="panel-register">Регистрация</button>
+          <button id="tab-reset" type="button" role="tab" data-tab="reset" aria-selected="false" aria-controls="panel-reset">Забыли пароль?</button>
+        </div>
+
+        <form id="panel-login" class="form tab-panel" role="tabpanel" aria-labelledby="tab-login" novalidate>
+          <div>
+            <h1>Вход в геопортал</h1>
+            <p class="auth-lead">Войдите, чтобы открыть карту и личный кабинет отдела.</p>
+          </div>
+          <label class="field">
+            <span>Логин</span>
+            <input id="login-name" class="input" name="login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+          </label>
+          <label class="field">
+            <span>Пароль</span>
+            <span class="password-field">
+              <input id="login-password" class="input" name="password" type="password" autocomplete="current-password" required>
+              <button class="icon-button password-toggle" type="button" data-toggle-password aria-label="Показать пароль" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg>
+              </button>
+            </span>
+          </label>
+          <p id="login-message" class="form-message" role="alert"></p>
+          <button class="btn btn-block" type="submit">Войти</button>
+        </form>
+
+        <form id="panel-register" class="form tab-panel" role="tabpanel" aria-labelledby="tab-register" novalidate hidden>
+          <div>
+            <h1>Регистрация</h1>
+            <p class="auth-lead">После регистрации администратор назначит вам роль — тогда откроются карта и кабинет отдела.</p>
+          </div>
+          <div class="form-grid">
+            <label class="field"><span>Фамилия</span><input class="input" name="lastName" type="text" autocomplete="family-name" required></label>
+            <label class="field"><span>Имя</span><input class="input" name="firstName" type="text" autocomplete="given-name" required></label>
+          </div>
+          <label class="field">
+            <span>Логин</span>
+            <input class="input" name="login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+          </label>
+          <label class="field">
+            <span>Отдел</span>
+            <select id="register-department" class="select" name="department" required></select>
+          </label>
+          <label class="field">
+            <span>Пароль</span>
+            <span class="password-field">
+              <input class="input" name="password" type="password" autocomplete="new-password" required>
+              <button class="icon-button password-toggle" type="button" data-toggle-password aria-label="Показать пароль" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg>
+              </button>
+            </span>
+          </label>
+          <label class="field">
+            <span>Повторите пароль</span>
+            <input class="input" name="repeat" type="password" autocomplete="new-password" required>
+          </label>
+          <p id="register-message" class="form-message" role="alert"></p>
+          <button class="btn btn-block" type="submit">Зарегистрироваться</button>
+        </form>
+
+        <div id="panel-reset" class="tab-panel" role="tabpanel" aria-labelledby="tab-reset" hidden>
+          <form id="reset-find" class="form" novalidate>
+            <div>
+              <h1>Восстановление пароля</h1>
+              <p class="auth-lead">Укажите логин — если он есть в системе, вы сразу зададите новый пароль.</p>
+            </div>
+            <label class="field">
+              <span>Логин</span>
+              <input id="reset-name" class="input" name="login" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+            </label>
+            <p id="reset-find-message" class="form-message" role="alert"></p>
+            <button class="btn btn-block" type="submit">Продолжить</button>
+          </form>
+
+          <form id="reset-set" class="form" novalidate hidden>
+            <div>
+              <h1>Новый пароль</h1>
+              <p class="auth-lead">Учётная запись: <b id="reset-user"></b></p>
+            </div>
+            <label class="field">
+              <span>Новый пароль</span>
+              <span class="password-field">
+                <input id="reset-password" class="input" name="password" type="password" autocomplete="new-password" required>
+                <button class="icon-button password-toggle" type="button" data-toggle-password aria-label="Показать пароль" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg>
+                </button>
+              </span>
+            </label>
+            <label class="field">
+              <span>Повторите пароль</span>
+              <input id="reset-repeat" class="input" name="repeat" type="password" autocomplete="new-password" required>
+            </label>
+            <p id="reset-set-message" class="form-message" role="alert"></p>
+            <div class="form-actions">
+              <button id="reset-back" class="btn btn-ghost" type="button">Другой логин</button>
+              <button class="btn" type="submit">Сохранить пароль</button>
+            </div>
+          </form>
+
+          <p class="form-note">Демо-режим: письмо не отправляется, пароль меняется сразу.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="auth.js"></script>
+  <script src="ui.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>
