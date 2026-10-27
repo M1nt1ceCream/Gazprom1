@@ -32,6 +32,7 @@ function setTab(name) {
   tabs.dataset.active = name;
   tabs.querySelectorAll('[role="tab"]').forEach(tab => tab.setAttribute('aria-selected', String(tab.dataset.tab === name)));
   Object.entries(panels).forEach(([key, panel]) => { panel.hidden = key !== name; });
+  document.getElementById('guest-entry').hidden = name === 'reset';
   if (name === 'reset') showResetStep('find');
   if (name === 'login') (loginName.value ? loginPassword : loginName).focus();
   if (name === 'register') registerForm.elements.lastName.focus();
@@ -146,3 +147,9 @@ document.getElementById('forgot-link').addEventListener('click', () => {
 });
 
 document.getElementById('back-to-login').addEventListener('click', () => setTab('login'));
+
+// Гость сразу попадает в новости, отдел выбирает в карточке слева
+document.getElementById('guest-login').addEventListener('click', () => {
+  Auth.loginAsGuest();
+  location.replace('account.html#news');
+});

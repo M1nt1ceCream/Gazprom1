@@ -59,9 +59,13 @@ const sidebar = document.getElementById('map-layers');
 const userChip = document.getElementById('user-chip');
 const currentUser = Auth.currentUser();
 
+// Карта открыта всем: без входа вместо аватара — кнопка «Войти»
 if (currentUser) {
   userChip.querySelector('.avatar').textContent = Auth.initials(currentUser);
   userChip.title = `${Auth.fullName(currentUser)} — личный кабинет`;
+  userChip.hidden = false;
+} else {
+  document.getElementById('login-link').hidden = false;
 }
 
 sidebarToggle.addEventListener('click', () => {

@@ -13,9 +13,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-account">
-  <canvas class="cloud cloud-bottom" data-cloud-src="assets/backgrounds/common.png" data-cloud-motion="wave" data-cloud-fit="cover" data-cloud-aspect="image" data-cloud-point-scale="0.75" aria-hidden="true"></canvas>
-  <canvas class="cloud cloud-side" data-cloud-motion="breathe" data-cloud-fit="contain" aria-hidden="true"></canvas>
-
+  <canvas class="cloud cloud-full" data-cloud-field data-cloud-density="0.45" data-cloud-motion="wave" data-cloud-point-scale="0.8" aria-hidden="true"></canvas>
   <header class="topbar">
     <div class="topbar-start">
       <a class="brand" href="./" aria-label="Газпром 1 — на главную">
@@ -26,7 +24,7 @@
       </a>
 
       <nav class="topnav" aria-label="Разделы сайта">
-        <a href="./" data-access="map" hidden>Карта</a>
+        <a href="./">Карта</a>
         <a href="account.html" aria-current="page">Кабинет</a>
       </nav>
     </div>
@@ -51,22 +49,34 @@
           <div>
             <b data-user-name></b>
             <small data-user-department></small>
-            <span class="role-badge" data-user-role></span>
+            <span class="role-badge" data-user-role data-no-guest></span>
+            <label class="card-switch" data-guest-only hidden>
+              <span>Войти как</span>
+              <select id="guest-dept" class="select"></select>
+            </label>
+            <label class="card-switch" data-admin-only hidden>
+              <span>Просмотр отдела</span>
+              <select id="dept-select" class="select"></select>
+            </label>
           </div>
         </div>
 
         <nav class="panel-box account-menu">
           <div class="account-menu-links">
             <span class="menu-pill" aria-hidden="true"></span>
+            <a href="#news" data-section-link="news" data-access="department" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h11v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1Z"/><path d="M16 9h3a1 1 0 0 1 1 1v8a2 2 0 0 1-4 0M8 9h5M8 13h5M8 17h3"/></svg>
+              <span>Новости</span>
+            </a>
+            <a href="#department" data-section-link="department" data-access="department" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4M8 7h2m4 0h2M8 11h2m4 0h2"/></svg>
+              <span>Мой Ямал</span>
+            </a>
             <a href="#profile" data-section-link="profile">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
               <span>Профиль</span>
             </a>
-            <a href="#department" data-section-link="department" data-access="department" hidden>
-              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 21v-4h6v4M8 7h2m4 0h2M8 11h2m4 0h2"/></svg>
-              <span>Мой отдел</span>
-            </a>
-            <a href="#security" data-section-link="security">
+            <a href="#security" data-section-link="security" data-no-guest>
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
               <span>Безопасность</span>
             </a>
@@ -88,7 +98,7 @@
           </span>
           <div>
             <h2>Заявка на рассмотрении</h2>
-            <p>Администратор назначит вам роль. После этого откроются карта и кабинет отдела.</p>
+            <p>Администратор назначит вам роль. После этого откроется кабинет отдела.</p>
           </div>
         </div>
 
@@ -106,29 +116,66 @@
               <label class="field"><span>Роль</span><input class="input" name="role" type="text" readonly></label>
             </div>
             <p id="profile-message" class="form-message" role="alert"></p>
-            <div class="form-actions"><button class="btn" type="submit">Сохранить</button></div>
+            <div class="form-actions" data-no-guest><button class="btn" type="submit">Сохранить</button></div>
           </form>
         </div>
       </section>
 
       <section class="account-section" data-section="department" hidden>
-        <div class="panel-box dept-hero">
-          <div>
-            <span class="eyebrow">Кабинет отдела</span>
-            <h1 id="dept-name" class="section-title"></h1>
-            <p id="dept-lead" class="section-lead"></p>
-          </div>
-          <label class="field dept-preview" data-access="users" hidden>
-            <span>Просмотр как отдел</span>
-            <select id="dept-select" class="select"></select>
-          </label>
-        </div>
         <div id="dept-widgets" class="widget-grid grow"></div>
         <div class="panel-box" data-access="team" hidden>
           <div class="box-head">
             <h2 class="box-title">Сотрудники отдела</h2>
           </div>
           <ul id="team-list" class="team-list"></ul>
+        </div>
+      </section>
+
+      <section class="account-section" data-section="news" hidden>
+        <div id="dept-news" class="panel-box news-panel" hidden>
+          <div class="box-head news-head">
+            <div>
+              <h1 class="section-title">Новости</h1>
+              <p class="section-lead">Сообщения других отделов для КМНС</p>
+            </div>
+            <ul id="news-legend" class="news-legend" aria-label="Уровни важности"></ul>
+          </div>
+          <div class="news-feed">
+            <ul id="news-grid" class="news-grid"></ul>
+            <div class="news-more">
+              <a href="news.html">
+                <span>Показать все</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div id="dept-post" class="panel-box" hidden>
+          <div class="box-head">
+            <h1 class="section-title">Новость для КМНС</h1>
+            <p class="section-lead">После публикации новость сразу появится в кабинете КМНС.</p>
+          </div>
+          <form id="news-form" class="form news-form" novalidate>
+            <label class="upload">
+              <input id="news-image" class="visually-hidden" name="image" type="file" accept="image/*">
+              <span class="news-cover upload-preview">
+                <img id="news-preview" alt="" hidden>
+                <span class="upload-hint">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>
+                  <b>Загрузить фото</b>
+                  <small>JPG, PNG или WebP</small>
+                </span>
+              </span>
+            </label>
+            <div class="news-form-fields">
+              <label class="field"><span>Заголовок</span><input class="input" name="title" type="text" maxlength="90" required></label>
+              <label class="field"><span>Объявление</span><textarea class="input textarea" name="text" rows="5" maxlength="2000" required></textarea></label>
+              <label class="field"><span>Важность</span><select class="select" name="level"></select></label>
+              <p id="news-message" class="form-message" role="alert"></p>
+              <div class="form-actions"><button class="btn" type="submit">Опубликовать</button></div>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -152,7 +199,7 @@
         <div class="panel-box grow">
           <div class="box-head">
             <h1 class="section-title">Пользователи</h1>
-            <p class="section-lead">Новые регистрации — сверху. Назначьте отдел и роль — доступ и кабинет пользователя изменятся сразу.</p>
+            <p id="users-lead" class="section-lead"></p>
           </div>
           <div class="table-wrap">
             <table class="users-table">
@@ -162,7 +209,7 @@
           </div>
         </div>
 
-        <div class="panel-box">
+        <div class="panel-box" data-editor-only hidden>
           <div class="box-head">
             <h2 class="box-title">Добавить пользователя</h2>
           </div>
@@ -192,6 +239,7 @@
 
   <script src="ui.js"></script>
   <script src="pointcloud.js"></script>
+  <script src="news.js"></script>
   <script src="account.js"></script>
 </body>
 </html>

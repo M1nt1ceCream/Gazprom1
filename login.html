@@ -32,7 +32,7 @@
         <form id="panel-login" class="form tab-panel" role="tabpanel" aria-labelledby="tab-login" novalidate>
           <div>
             <h1>Вход в геопортал</h1>
-            <p class="auth-lead">Войдите, чтобы открыть карту и личный кабинет отдела.</p>
+            <p class="auth-lead">Войдите, чтобы открыть личный кабинет отдела.</p>
           </div>
           <label class="field">
             <span>Логин</span>
@@ -55,7 +55,7 @@
         <form id="panel-register" class="form tab-panel" role="tabpanel" aria-labelledby="tab-register" novalidate hidden>
           <div>
             <h1>Регистрация</h1>
-            <p class="auth-lead">После регистрации администратор назначит вам роль — тогда откроются карта и кабинет отдела.</p>
+            <p class="auth-lead">После регистрации администратор назначит вам роль — тогда откроется кабинет отдела.</p>
           </div>
           <div class="form-grid">
             <label class="field"><span>Фамилия</span><input class="input" name="lastName" type="text" autocomplete="family-name" required></label>
@@ -127,6 +127,15 @@
 
           <p class="form-note">Демо-режим: письмо не отправляется, пароль меняется сразу.</p>
           <button id="back-to-login" class="link-button back-link" type="button">← Вернуться ко входу</button>
+        </div>
+
+        <div id="guest-entry" class="guest-entry">
+          <span class="divider">или</span>
+          <button id="guest-login" class="btn btn-block btn-guest" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
+            <span>Войти как гость</span>
+          </button>
+          <p class="form-note">Полный доступ без регистрации — отдел выбирается в кабинете</p>
         </div>
       </div>
     </div>
