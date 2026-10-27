@@ -1,12 +1,17 @@
 let user = Auth.currentUser();
 const sections = [...document.querySelectorAll('[data-section]')];
 const sectionLinks = [...document.querySelectorAll('[data-section-link]')];
-const sectionAccess = {department:'department', users:'users'};
+const sectionAccess = {department:'department', news:'department', users:'users'};
 const profileForm = document.getElementById('profile-form');
 const passwordForm = document.getElementById('password-form');
 const userForm = document.getElementById('user-form');
 const usersBody = document.getElementById('users-body');
 const deptSelect = document.getElementById('dept-select');
+const guestDept = document.getElementById('guest-dept');
+const newsForm = document.getElementById('news-form');
+const newsImage = document.getElementById('news-image');
+const newsPreview = document.getElementById('news-preview');
+let viewedDepartment = '';
 const pendingCount = document.getElementById('pending-count');
 const menuPill = document.querySelector('.menu-pill');
 const sideCloud = document.querySelector('.cloud-side');
@@ -49,9 +54,19 @@ function roleName(key) {
   return Auth.roles[key] ? Auth.roles[key].name : key;
 }
 
+function isGuest() {
+  return user.role === 'guest';
+}
+
+// Гостю вместо плашки роли — выбор отдела, без смены пароля и сохранения профиля.
+// Просмотр любого отдела — только у администратора, добавление пользователей — у администраторов
 function applyAccess() {
   document.querySelectorAll('[data-access]').forEach(node => { node.hidden = !Auth.can(user, node.dataset.access); });
   document.querySelectorAll('[data-pending-only]').forEach(node => { node.hidden = user.role !== 'pending'; });
+  document.querySelectorAll('[data-guest-only]').forEach(node => { node.hidden = !isGuest(); });
+  document.querySelectorAll('[data-admin-only]').forEach(node => { node.hidden = user.role !== 'admin'; });
+  document.querySelectorAll('[data-editor-only]').forEach(node => { node.hidden = !Auth.canEditUsers(user); });
+  if (isGuest()) document.querySelectorAll('[data-no-guest]').forEach(node => { node.hidden = true; });
 }
 
 function renderIdentity() {
@@ -68,6 +83,7 @@ function fillProfile() {
   fields.login.value = user.login;
   fields.department.value = departmentName(user.department);
   fields.role.value = roleName(user.role);
+  fields.lastName.readOnly = fields.firstName.readOnly = isGuest();
 }
 
 function refreshSelf() {
@@ -77,19 +93,28 @@ function refreshSelf() {
   fillProfile();
 }
 
-// Справа облако точек из картинки отдела; у отдела без картинки точки рассеиваются
+// Справа облако точек из картинки отдела; у отдела без картинки точки рассеиваются.
+// Холст .cloud-side сейчас со страницы убран — без него функция ничего не делает
 function showDepartmentCloud(key) {
   const {src = null, ...options} = (Auth.departments[key] && Auth.departments[key].cloud) || {};
   if (sideCloud && sideCloud.cloud) sideCloud.cloud.show(src, options);
 }
 
+// В кабинете — только два ряда свежих новостей, остальные на странице «Показать все»
+function renderNews() {
+  document.getElementById('news-grid').replaceChildren(...News.list().slice(0, 8).map(item => News.tile(item)));
+}
+
+// Разделы «Мой Ямал» и «Новости» показывают отдел пользователя, а администратору — выбранный в карточке.
+// В «Новостях» КМНС читает новости, остальные отделы их публикуют
 function renderDepartment(key) {
   const dept = Auth.departments[key] || Object.values(Auth.departments)[0];
-  const lead = document.getElementById('dept-lead');
   const widgets = dept.widgets || [];
-  document.getElementById('dept-name').textContent = dept.name;
-  lead.textContent = dept.lead || '';
-  lead.hidden = !dept.lead;
+  const isAudience = key === News.audience;
+  viewedDepartment = Auth.departments[key] ? key : Object.keys(Auth.departments)[0];
+  document.getElementById('dept-news').hidden = !isAudience;
+  document.getElementById('dept-post').hidden = isAudience;
+  if (isAudience) renderNews();
   document.getElementById('dept-widgets').replaceChildren(...(widgets.length ? widgets.map(widget => {
     const card = el('article', 'panel-box widget');
     card.append(el('h2', '', widget.title), el('p', '', widget.text), el('span', 'soon', 'В разработке'));
@@ -110,9 +135,10 @@ function renderDepartment(key) {
   }) : [el('li', 'empty-note', 'В отделе пока нет подтверждённых сотрудников')]));
 }
 
+// Заявки, которые этот пользователь может подтвердить
 function updatePendingCount() {
   if (!Auth.can(user, 'users')) return;
-  const count = Auth.listUsers().filter(item => item.role === 'pending').length;
+  const count = Auth.listUsers().filter(item => item.role === 'pending' && Auth.canManage(item)).length;
   pendingCount.textContent = count;
   pendingCount.hidden = !count;
 }
@@ -131,9 +157,17 @@ function saveUser(login, field, select) {
   if (login === user.login) refreshSelf();
 }
 
+// Роли, которые этот пользователь может назначать: администратор отдела — все, кроме администратора
+function rolesToAssign() {
+  if (user.role === 'admin') return Auth.assignableRoles;
+  const {admin, ...rest} = Auth.assignableRoles;
+  return rest;
+}
+
 function userRow(item, isNew) {
   const self = item.login === user.login;
   const pending = item.role === 'pending';
+  const editable = Auth.canManage(item);
   const row = el('tr', [isNew ? 'is-new' : '', pending ? 'is-pending' : ''].join(' ').trim());
 
   const person = el('div', 'user-cell');
@@ -142,18 +176,21 @@ function userRow(item, isNew) {
   copy.append(el('b', '', Auth.fullName(item) || item.login), el('small', '', self ? `${item.login} · это вы` : meta));
   person.append(el('span', 'avatar avatar-sm', Auth.initials(item)), copy);
 
-  const selects = [['department', Auth.departments, 'Отдел'], ['role', Auth.roles, 'Роль']].map(([field, items, label]) => {
+  // Чужих сотрудников видно, но не изменить; переводить между отделами может только администратор
+  const roleItems = editable ? rolesToAssign() : Auth.assignableRoles;
+  const selects = [['department', Auth.departments, 'Отдел'], ['role', roleItems, 'Роль']].map(([field, items, label]) => {
     const select = el('select', 'select');
     fillOptions(select, items, item[field]);
     select.dataset.value = item[field];
     select.setAttribute('aria-label', `${label}: ${Auth.fullName(item) || item.login}`);
-    select.disabled = self && field === 'role';
+    select.disabled = !editable || (field === 'role' ? self : user.role !== 'admin');
     select.addEventListener('change', () => saveUser(item.login, field, select));
     return select;
   });
 
   const remove = el('button', 'icon-button danger');
   remove.type = 'button';
+  remove.hidden = !editable;
   remove.disabled = self;
   remove.title = self ? 'Нельзя удалить свою учётную запись' : 'Удалить пользователя';
   remove.setAttribute('aria-label', `Удалить: ${Auth.fullName(item) || item.login}`);
@@ -175,9 +212,36 @@ function userRow(item, isNew) {
   return row;
 }
 
+// Пользователи по отделам: над каждым отделом строка с числом людей и его администраторами
 function renderUsers(highlight = '') {
-  usersBody.replaceChildren(...Auth.listUsers().map(item => userRow(item, item.login === highlight)));
+  const users = Auth.listUsers();
+  const rows = [];
+  let group = null;
+  users.forEach(item => {
+    if (item.department !== group) {
+      group = item.department;
+      const members = users.filter(other => other.department === group);
+      const admins = members.filter(other => other.role === 'deptAdmin').map(other => Auth.fullName(other) || other.login);
+      const head = el('tr', 'group-row');
+      const cell = el('th');
+      cell.colSpan = 4;
+      cell.scope = 'colgroup';
+      cell.append(el('b', '', departmentName(group)), el('span', '', ` · ${members.length}`));
+      if (admins.length) cell.append(el('span', 'group-admin', `Админ отдела: ${admins.join(', ')}`));
+      head.append(cell);
+      rows.push(head);
+    }
+    rows.push(userRow(item, item.login === highlight));
+  });
+  usersBody.replaceChildren(...rows);
   updatePendingCount();
+}
+
+function renderUsersLead() {
+  const lead = document.getElementById('users-lead');
+  if (isGuest()) lead.textContent = 'Гостевой режим: пользователей можно смотреть, но не изменять.';
+  else if (user.role === 'deptAdmin') lead.textContent = `Вы администратор отдела «${departmentName(user.department)}»: подтверждаете заявки, меняете роли и удаляете сотрудников своего отдела. Остальных можно только смотреть.`;
+  else lead.textContent = 'Все пользователи по отделам, заявки на подтверждение — первыми. Назначьте отдел и роль — доступ изменится сразу.';
 }
 
 // Плашка переезжает под активный пункт; первый раз встаёт на место без анимации
@@ -191,6 +255,11 @@ function movePill() {
     menuPill.getBoundingClientRect();
     menuPill.classList.add('is-ready');
   }
+  // На телефоне меню — строка с прокруткой: активный пункт по центру
+  const links = link.parentElement;
+  if (links.scrollWidth > links.clientWidth) {
+    links.scrollTo({left:link.offsetLeft - (links.clientWidth - link.offsetWidth) / 2, behavior:'smooth'});
+  }
 }
 
 function showSection(name) {
@@ -203,7 +272,7 @@ function showSection(name) {
   });
   movePill();
   if (name === 'users') renderUsers();
-  if (name === 'department') renderDepartment(Auth.can(user, 'users') ? deptSelect.value : user.department);
+  if (name === 'department' || name === 'news') renderDepartment(user.role === 'admin' ? deptSelect.value : user.department);
   window.scrollTo({top:0});
 }
 
@@ -258,9 +327,65 @@ userForm.addEventListener('submit', async e => {
   showToast('Пользователь добавлен');
 });
 
+guestDept.addEventListener('change', () => {
+  const result = Auth.setGuestDepartment(guestDept.value);
+  if (!result.ok) {
+    showToast(result.error);
+    return;
+  }
+  refreshSelf();
+  renderDepartment(user.department);
+  showDepartmentCloud(user.department);
+  showToast(`Вы вошли как: ${departmentName(user.department)}`);
+});
+
 deptSelect.addEventListener('change', () => {
-  renderDepartment(deptSelect.value);
+  if (!['#department', '#news'].includes(location.hash)) location.hash = 'department';
+  else renderDepartment(deptSelect.value);
   showDepartmentCloud(deptSelect.value);
+});
+
+function resetNewsForm() {
+  newsForm.reset();
+  newsForm.elements.level.value = 'normal';
+  newsPreview.hidden = true;
+  newsPreview.removeAttribute('src');
+  newsForm.querySelector('.upload').classList.remove('has-image');
+  newsForm.querySelector('.upload-hint b').textContent = 'Загрузить фото';
+}
+
+newsImage.addEventListener('change', () => {
+  const file = newsImage.files[0];
+  if (newsPreview.src) URL.revokeObjectURL(newsPreview.src);
+  newsPreview.hidden = !file;
+  newsForm.querySelector('.upload').classList.toggle('has-image', Boolean(file));
+  newsForm.querySelector('.upload-hint b').textContent = file ? 'Заменить фото' : 'Загрузить фото';
+  if (file) newsPreview.src = URL.createObjectURL(file);
+});
+
+newsForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const fields = newsForm.elements;
+  const button = newsForm.querySelector('[type="submit"]');
+  const message = document.getElementById('news-message');
+  button.disabled = true;
+  const result = await News.add({
+    title:fields.title.value,
+    text:fields.text.value,
+    level:fields.level.value,
+    file:newsImage.files[0]
+  }, {department:viewedDepartment, name:Auth.fullName(user) || user.login});
+  button.disabled = false;
+  message.classList.toggle('is-success', result.ok);
+  if (!result.ok) {
+    message.textContent = result.error;
+    return;
+  }
+  resetNewsForm();
+  const link = el('a', '', 'Открыть новость');
+  link.href = `news.html?id=${encodeURIComponent(result.news.id)}`;
+  message.replaceChildren('Опубликовано для КМНС · ', link);
+  showToast('Новость опубликована');
 });
 
 document.getElementById('logout').addEventListener('click', () => {
@@ -273,13 +398,21 @@ window.addEventListener('resize', movePill);
 document.fonts.ready.then(movePill);
 
 if (user) {
-  fillOptions(deptSelect, Auth.departments, user.department);
-  fillOptions(userForm.elements.department, Auth.departments, Object.keys(Auth.departments)[0]);
-  fillOptions(userForm.elements.role, Auth.roles, 'employee');
+  // Со страницы новости администратор возвращается в кабинет КМНС (?dept=kmns)
+  const requestedDept = new URLSearchParams(location.search).get('dept');
+  fillOptions(deptSelect, Auth.departments, Auth.departments[requestedDept] ? requestedDept : user.department);
+  fillOptions(guestDept, Auth.departments, user.department);
+  // Администратор отдела добавляет людей только в свой отдел
+  const formDepartments = user.role === 'admin' ? Auth.departments : {[user.department]:Auth.departments[user.department]};
+  fillOptions(userForm.elements.department, formDepartments, user.role === 'admin' ? Object.keys(Auth.departments)[0] : user.department);
+  fillOptions(userForm.elements.role, rolesToAssign(), 'employee');
+  renderUsersLead();
+  fillOptions(newsForm.elements.level, News.levels, 'normal');
+  document.getElementById('news-legend').replaceChildren(...News.legend());
   applyAccess();
   renderIdentity();
   fillProfile();
   updatePendingCount();
-  showSection(location.hash.slice(1));
+  showSection(location.hash.slice(1) || (Auth.can(user, 'department') ? 'news' : 'profile'));
   showDepartmentCloud(user.department);
 }

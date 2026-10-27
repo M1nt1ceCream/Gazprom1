@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#013c81">
+  <title>Газпром 1 — новость</title>
+  <script src="auth.js"></script>
+  <script>Auth.requireUser();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-account">
+  <canvas class="cloud cloud-full" data-cloud-field data-cloud-density="0.45" data-cloud-motion="wave" data-cloud-point-scale="0.8" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <div class="topbar-start">
+      <a class="brand" href="./" aria-label="Газпром 1 — на главную">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M6 24.5 12.3 7l5.1 11 3.1-7.2L27 24.5H6Z"/><path d="m12.3 7 5.1 11 3.1-7.2"/></svg>
+        </span>
+        <span class="brand-copy"><b>Газпром 1</b><small>Новости КМНС</small></span>
+      </a>
+
+      <nav class="topnav" aria-label="Разделы сайта">
+        <a href="./">Карта</a>
+        <a href="account.html">Кабинет</a>
+      </nav>
+    </div>
+
+    <div class="header-actions">
+      <a id="user-chip" class="user-chip" href="account.html#profile">
+        <span class="avatar" data-user-initials></span>
+        <span class="user-chip-copy"><b data-user-name></b><small data-user-role></small></span>
+      </a>
+      <button id="logout" class="header-button" type="button" title="Выйти из учётной записи">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>
+        <span>Выйти</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="news-page">
+    <a id="news-back" class="news-back" href="news.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>
+      <span>Все новости</span>
+    </a>
+
+    <section id="news-all" class="panel-box news-panel news-all" hidden>
+      <div class="box-head news-head">
+        <div>
+          <h1 class="section-title">Новости КМНС</h1>
+          <p class="section-lead">Все сообщения других отделов — свежие сверху</p>
+        </div>
+        <ul id="news-legend" class="news-legend" aria-label="Уровни важности"></ul>
+      </div>
+      <ul id="news-all-grid" class="news-grid news-grid-all"></ul>
+    </section>
+
+    <article id="news-article" class="panel-box news-article" hidden>
+      <div class="news-cover news-hero">
+        <img id="news-image" alt="">
+        <div class="news-hero-copy">
+          <span class="level-chip"><i id="news-level-dot" class="level-dot"></i><span id="news-level"></span></span>
+          <h1 id="news-title"></h1>
+        </div>
+      </div>
+      <div class="news-body">
+        <p id="news-meta" class="news-meta"></p>
+        <div id="news-text" class="news-text"></div>
+        <p id="news-credit" class="news-credit" hidden></p>
+      </div>
+    </article>
+
+    <div id="news-missing" class="panel-box dept-empty" hidden>
+      <h2>Новость не найдена</h2>
+      <p>Возможно, ссылка устарела или новость опубликована в другом браузере.</p>
+    </div>
+  </main>
+
+  <script src="ui.js"></script>
+  <script src="pointcloud.js"></script>
+  <script src="news.js"></script>
+  <script src="news-page.js"></script>
+</body>
+</html>

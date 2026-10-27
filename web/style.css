@@ -1484,6 +1484,45 @@ select {
   letter-spacing: -.015em;
 }
 
+/* Вход как гость — под формами, отделён линией «или» */
+.guest-entry {
+  margin-top: 18px;
+}
+
+.guest-entry .divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.guest-entry .divider::before,
+.guest-entry .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.guest-entry .form-note {
+  margin-top: 10px;
+}
+
+/* Яркая синяя — отличается от основной «Войти» */
+.btn-guest {
+  background: #1f73d6;
+}
+
+.btn-guest::before {
+  background: #2f86ea;
+}
+
+.header-login {
+  height: 40px;
+}
+
 .auth-lead {
   margin: 6px 0 4px;
   color: var(--text-muted);
@@ -1584,15 +1623,28 @@ select {
   color: var(--text);
 }
 
-/* Облако точек (pointcloud.js) лежит под боксами кабинета.
-   Нижняя зона — общая панорама на всю ширину экрана, прижата к низу; высота по пропорции
-   картинки (pointcloud.js ставит aspect-ratio по data-cloud-aspect="image"), но не выше окна */
+/* Облако точек (pointcloud.js) лежит под боксами кабинета */
 .cloud {
   position: fixed;
   z-index: 0;
   pointer-events: none;
 }
 
+/* Кабинет и новости — поле точек на весь экран, без картинки (data-cloud-field) */
+/* Высота — по самому большому окну (lvh): на телефоне холст не пересоздаётся, когда прячется адресная строка */
+.cloud-full {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh;
+}
+
+/* Нижняя волна из картинки — панорама на всю ширину, прижата к низу; высота по пропорции
+   картинки (pointcloud.js ставит aspect-ratio по data-cloud-aspect="image"), но не выше окна.
+   Сейчас нигде не подключена. Подключение:
+   <canvas class="cloud cloud-bottom" data-cloud-src="assets/backgrounds/common.png" data-cloud-motion="wave"
+     data-cloud-fit="cover" data-cloud-aspect="image" data-cloud-point-scale="0.75" aria-hidden="true"></canvas> */
 .cloud-bottom {
   left: 0;
   bottom: 0;
@@ -1605,7 +1657,10 @@ select {
 
 /* Правая зона — картинка отдела справа от рабочей колонки (1400px + отступы 12px), приподнята
    на 80px при той же высоте (верх уходит под шапку, там у картинок пустое поле).
-   Холст — замещаемый элемент и не тянется между left/right, поэтому размеры заданы явно */
+   Холст — замещаемый элемент и не тянется между left/right, поэтому размеры заданы явно.
+   Сейчас со страниц убрано, отложено для другого места. Подключение — в начале body:
+   <canvas class="cloud cloud-side" data-cloud-motion="breathe" data-cloud-fit="contain" aria-hidden="true"></canvas>
+   картинку отдела ставит showDepartmentCloud() в account.js */
 .cloud-side {
   top: calc(var(--stack-top) - 80px);
   left: calc(var(--gap) + var(--panel-w) + 1424px);
@@ -1632,9 +1687,17 @@ select {
   padding: var(--stack-top) var(--gap) var(--gap);
 }
 
+/* Левая панель — по высоте окна: липнет под шапкой, снизу тот же отступ, что у краёв экрана */
 .account-nav {
+  position: sticky;
+  top: var(--stack-top);
+  align-self: start;
+  height: calc(100vh - var(--stack-top) - var(--gap));
+  height: calc(100dvh - var(--stack-top) - var(--gap));
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
   padding: 8px;
   animation: slide-in .6s var(--ease-out) .08s both;
 }
@@ -1669,6 +1732,33 @@ select {
   font-size: 12px;
 }
 
+/* У гостя на месте плашки роли — выбор отдела, у администратора под плашкой — просмотр отдела */
+.account-card > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.card-switch {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.card-switch > span {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.card-switch .select {
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--heading);
+}
+
 .role-badge {
   display: inline-flex;
   margin-top: 8px;
@@ -1686,8 +1776,7 @@ select {
 }
 
 .account-menu-links {
-  position: sticky;
-  top: calc(var(--stack-top) + 8px);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1807,16 +1896,490 @@ select {
   text-transform: uppercase;
 }
 
-.dept-hero {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
+/* Новости КМНС: 4 плитки в ряд, на узкой колонке 2, всегда два ряда — свежие новости.
+   Как левая стеклянная панель: плитки в 8px от краёв и друг от друга, радиус блока 22px,
+   радиус плиток 14px — скругления идут параллельно */
+.news-panel {
+  container-type: inline-size;
 }
 
-.dept-preview {
-  width: 240px;
+.panel-box.news-panel,
+.account-section .panel-box.news-panel {
+  padding: 8px;
+  border-radius: var(--radius-glass);
+}
+
+/* Текст шапки — на одной линии с подписями плиток (8px + 12px) */
+.news-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 20px;
+  margin-bottom: 8px;
+  padding: 12px 12px 6px;
+}
+
+.news-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.news-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.news-legend .level-dot {
+  width: 20px;
+  height: 10px;
+  margin: 0;
+  box-shadow: none;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-grid > li:nth-child(n + 9) {
+  display: none;
+}
+
+/* Нижний ряд плиток уходит в синий градиент, поверх — белое «Показать все».
+   Градиент лежит прямо на плитках, блок новостей не растёт, по плиткам можно кликать */
+.news-feed {
+  position: relative;
+}
+
+.news-more {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 132px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 14px;
+  border-radius: 0 0 var(--radius-box) var(--radius-box);
+  background: linear-gradient(to bottom, #013c8100 0%, #013c818c 40%, #013c81e6 72%, var(--page-bg-base) 100%);
+  pointer-events: none;
+}
+
+.news-more a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  pointer-events: auto;
+  transition: background-color .2s var(--ease);
+}
+
+.news-more a:hover {
+  background: #ffffff26;
+}
+
+.news-more svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .25s var(--ease);
+}
+
+.news-more a:hover svg {
+  transform: translateX(3px);
+}
+
+/* На странице всех новостей рядов сколько угодно */
+.news-grid-all > li:nth-child(n) {
+  display: block;
+}
+
+@container (max-width: 560px) {
+  .news-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .news-grid > li:nth-child(n + 5) {
+    display: none;
+  }
+
+  .news-grid-all > li:nth-child(n) {
+    display: block;
+  }
+
+  /* Плитки мельче — градиент заходит на них меньше, чтобы подписи читались */
+  .news-more {
+    height: 100px;
+    padding-bottom: 8px;
+  }
+}
+
+/* Фото под синим градиентом: ::before тонирует снимок в синий (как карта градиента в Photoshop),
+   ::after затемняет низ под подпись */
+.news-cover,
+.news-tile {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--radius-box);
+  background: var(--page-bg-base);
+}
+
+.news-cover img,
+.news-tile img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.1);
+  transition: transform .6s var(--ease-out);
+}
+
+.news-cover::before,
+.news-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(160deg, #37bef0 0%, #1f73d6 45%, #013c81 100%);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.news-cover::after,
+.news-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to bottom, #013c8100 35%, #013c81b3 72%, #012a5ef2 100%);
+  pointer-events: none;
+}
+
+.news-tile {
+  display: block;
+  aspect-ratio: 1;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: var(--box-shadow);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+
+.news-tile:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--float-shadow);
+}
+
+.news-tile:hover img {
+  transform: scale(1.06);
+}
+
+.news-tile:focus-visible {
+  outline: 3px solid var(--accent-ring);
+  outline-offset: 2px;
+}
+
+.news-tile-date {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ffffff26;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.news-tile-caption {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.news-tile-caption b {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-shadow: 0 1px 8px #012a5e80;
+}
+
+.level-dot {
+  width: 28px;
+  height: 14px;
   flex: 0 0 auto;
+  display: block;
+  margin-bottom: 2px;
+  border-radius: 999px;
+  background: var(--level);
+  box-shadow: 0 0 0 2px #ffffffd9, 0 0 12px var(--level);
+}
+
+@container (max-width: 560px) {
+  .news-tile-caption {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    gap: 8px;
+  }
+
+  .news-tile-caption b {
+    font-size: 12.5px;
+  }
+
+  .news-tile-date {
+    top: 8px;
+    left: 8px;
+  }
+}
+
+/* Форма новости: слева квадрат для фото (сразу с тем же градиентом, что на плитке), справа поля */
+.news-form {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.news-form-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.textarea {
+  height: auto;
+  font: inherit;
+  font-size: 14px;
+  min-height: 120px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.upload {
+  display: block;
+  cursor: pointer;
+}
+
+.upload-preview {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 1px dashed var(--control-border);
+  background: var(--accent-soft);
+  transition: border-color .2s var(--ease);
+}
+
+.upload:not(.has-image) .upload-preview::before,
+.upload:not(.has-image) .upload-preview::after {
+  display: none;
+}
+
+.upload:hover .upload-preview,
+.upload:focus-within .upload-preview {
+  border-color: var(--accent);
+}
+
+.upload-hint {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 16px;
+  color: var(--heading);
+  text-align: center;
+}
+
+.upload-hint svg {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.upload-hint b {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.upload-hint small {
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+/* С фото подсказка уходит вниз и светлеет */
+.upload.has-image .upload-hint {
+  align-self: end;
+  color: #fff;
+}
+
+.upload.has-image .upload-hint svg,
+.upload.has-image .upload-hint small {
+  display: none;
+}
+
+.form-message a {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Страница новости и всех новостей — одной ширины */
+.news-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+  padding: var(--stack-top) var(--gap) var(--gap);
+}
+
+.news-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  color: var(--on-glass);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  animation: rise .5s var(--ease-out) both;
+}
+
+.news-back svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .25s var(--ease);
+}
+
+.news-back:hover svg {
+  transform: translateX(-3px);
+}
+
+/* Как блок новостей: обложка в 8px от краёв, радиусы 22 / 14 идут параллельно */
+.panel-box.news-article {
+  padding: 8px;
+  border-radius: var(--radius-glass);
+}
+
+/* Обложка 16:9, но не выше окна под шапкой и «Все новости» — заголовок всегда виден,
+   фото при этом подрезается (object-fit: cover) */
+.news-hero {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100vh - var(--stack-top) - 76px);
+  max-height: calc(100svh - var(--stack-top) - 76px);
+  min-height: 280px;
+  display: flex;
+  align-items: flex-end;
+  padding: 32px;
+  color: #fff;
+}
+
+.news-hero h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3.4vw, 32px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -.015em;
+  text-shadow: 0 1px 12px #012a5e80;
+}
+
+.level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  background: #ffffff26;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.level-chip .level-dot {
+  width: 20px;
+  height: 10px;
+  margin: 0;
+}
+
+/* Текст — на одной линии с заголовком на обложке, строки не длиннее ~80 знаков */
+.news-body {
+  padding: 22px 32px 16px;
+}
+
+.news-body > * {
+  max-width: 80ch;
+}
+
+.news-meta {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.news-text p {
+  margin: 0 0 14px;
+  color: var(--text);
+  font-size: 15.5px;
+  line-height: 1.65;
+}
+
+.news-credit {
+  margin: 20px 0 0;
+  color: var(--text-faint);
+  font-size: 11.5px;
+}
+
+.news-credit a {
+  color: inherit;
 }
 
 .widget-grid {
@@ -2020,6 +2583,36 @@ select {
 
 .users-table tr.is-pending td:first-child {
   box-shadow: inset 3px 0 0 var(--status-loading);
+}
+
+.users-table .group-row th {
+  padding: 18px 10px 8px;
+  color: var(--heading);
+  font-size: 12px;
+  letter-spacing: .04em;
+}
+
+.users-table .group-row b {
+  font-weight: 600;
+}
+
+.users-table .group-row span {
+  color: var(--text-muted);
+}
+
+.group-admin {
+  margin-left: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.users-table tbody tr:first-child.group-row th {
+  padding-top: 4px;
 }
 
 .users-table .select {
@@ -2334,12 +2927,22 @@ select {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* На телефоне из облаков остаётся только лёгкое поле точек кабинета */
   .cloud {
     display: none;
   }
 
+  .cloud-full {
+    display: block;
+  }
+
+  .account-nav {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+
   .account-menu-links {
-    position: relative;
     flex-direction: row;
     overflow-x: auto;
     scrollbar-width: none;
@@ -2363,13 +2966,21 @@ select {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .dept-hero {
-    flex-direction: column;
-    align-items: stretch;
+  .news-form {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .dept-preview {
-    width: auto;
+  .news-hero {
+    aspect-ratio: 4 / 3;
+    padding: 18px;
+  }
+
+  .news-body {
+    padding: 16px 18px 10px;
+  }
+
+  .upload {
+    width: min(100%, 260px);
   }
 
   .auth-box {

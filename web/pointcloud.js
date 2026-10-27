@@ -11,12 +11,19 @@
 //   data-cloud-aspect="image": холст принимает пропорции картинки (высота от ширины)
 //   data-cloud-contrast / data-cloud-exposure / data-cloud-left-boost / data-cloud-invert:
 //   настройки яркости для data-cloud-src
+//   data-cloud-field: без картинки точки ровным полем на весь холст (фон кабинета), а не рассеиваются
+//   data-cloud-density: множитель числа точек (по умолчанию 1)
+// На телефоне (до 720px) облако облегчено: меньше точек, ниже плотность пикселей холста, 30 кадров в секунду
 // Сменить картинку: canvas.cloud.show('путь', {leftBoost, exposure}) или canvas.cloud.show(null)
 (function () {
   const pointColor = [251 / 255, 251 / 255, 255 / 255];
   const sampleArea = 450000;
   const morphDuration = 2200;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const small = window.matchMedia('(max-width: 720px)').matches;
+  const maxDpr = small ? 1.5 : 2;
+  // ~30 кадров: порог чуть меньше 33 мс, чтобы при 60 Гц рисовался ровно каждый второй кадр
+  const frameInterval = small ? 28 : 0;
 
   // Шейдеры только на ASCII: часть драйверов WebGL не принимает другие символы даже в комментариях
   const vertexSource = `
@@ -170,6 +177,21 @@
     return {pos, data, aspect:null};
   }
 
+  // Поле на весь холст: почти все точки тусклые и мелкие, редкие — ярче и крупнее, как звёздная пыль
+  function fieldState(count) {
+    const pos = new Float32Array(count * 2);
+    const data = new Float32Array(count * 3);
+    for (let k = 0; k < count; k++) {
+      const l = Math.random() ** 3;
+      pos[k * 2] = Math.random();
+      pos[k * 2 + 1] = Math.random();
+      data[k * 3] = Math.random() * 2 - 1;
+      data[k * 3 + 1] = 0.18 + 0.72 * l;
+      data[k * 3 + 2] = 1.1 + l * 1.8 + (l > 0.7 ? 1 : 0);
+    }
+    return {pos, data, aspect:null};
+  }
+
   // cover: картинка по ширине (или высоте) и прижата к низу; contain: целиком по центру
   function fitImage(width, height, aspect, mode) {
     if (!aspect) return [width, height, 0, 0];
@@ -221,7 +243,9 @@
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.clearColor(0, 0, 0, 0);
 
-    const count = Math.round(Math.min(42000, Math.max(6000, canvas.clientWidth * canvas.clientHeight / 55)));
+    const density = (parseFloat(canvas.dataset.cloudDensity) || 1) * (small ? 0.6 : 1);
+    const count = Math.round(Math.min(42000, Math.max(6000, canvas.clientWidth * canvas.clientHeight / 55)) * density);
+    const field = canvas.dataset.cloudField !== undefined;
     const fitMode = canvas.dataset.cloudFit || 'cover';
     const motion = canvas.dataset.cloudMotion || 'wave';
     const upload = {
@@ -281,11 +305,11 @@
         next = samplePoints(image, count, options);
         cache.set(key, next);
       }
-      if (ticket === request) morphTo(next || scatterState(count));
+      if (ticket === request) morphTo(next || (field ? fieldState(count) : scatterState(count)));
     }
 
     function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
       canvas.width = Math.round(canvas.clientWidth * dpr);
       canvas.height = Math.round(canvas.clientHeight * dpr);
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -302,7 +326,14 @@
     });
     document.addEventListener('pointerleave', () => { pointer.inside = false; });
 
+    let lastFrame = 0;
+
     function frame(now) {
+      if (frameInterval && now - lastFrame < frameInterval) {
+        requestAnimationFrame(frame);
+        return;
+      }
+      lastFrame = now;
       if (canvas.clientWidth && canvas.clientHeight) {
         hover += ((pointer.inside && !reduceMotion ? 1 : 0) - hover) * 0.08;
         gl.uniform1f(u.time, reduceMotion ? 0 : (now - started) / 1000);
@@ -327,6 +358,7 @@
       if (value) initial[name] = value;
     }
     if (canvas.dataset.cloudSrc) canvas.cloud.show(canvas.dataset.cloudSrc, initial);
+    else if (field) canvas.cloud.show(null);
   }
 
   document.querySelectorAll('canvas.cloud').forEach(canvas => {

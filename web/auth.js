@@ -6,17 +6,27 @@
   const sessionKey = 'gazprom1-session-v3';
   const minPassword = 4;
   const loginPattern = /^[a-z0-9._-]{3,32}$/;
+  const guestLogin = 'guest';
+  const guestOnlyError = 'В гостевом режиме недоступно — войдите или зарегистрируйтесь';
 
-  // access: map — карта, department — кабинет отдела, team — сотрудники отдела, users — управление пользователями
+  // access: map — карта, department — кабинет отдела, team — сотрудники отдела, users — список пользователей.
+  // Менять пользователей может администратор — всех, администратор отдела — только людей своего отдела (canManage)
   const roles = {
     admin:{name:'Администратор', access:['map', 'department', 'team', 'users']},
+    deptAdmin:{name:'Администратор отдела', access:['map', 'department', 'team', 'users']},
     head:{name:'Руководитель отдела', access:['map', 'department', 'team']},
     employee:{name:'Сотрудник', access:['map', 'department']},
-    pending:{name:'Ожидает подтверждения', access:[]}
+    pending:{name:'Ожидает подтверждения', access:[]},
+    // Гость — для показа экспертам: видит всё, что администратор, но ничего не меняет; отдел выбирает сам.
+    // Нигде не хранится как пользователь, живёт только в сессии
+    guest:{name:'Гостевой доступ', access:['map', 'department', 'team', 'users']}
   };
 
+  // Роли, которые можно назначить пользователю, — все, кроме гостевой
+  const assignableRoles = Object.fromEntries(Object.entries(roles).filter(([key]) => key !== 'guest'));
+
   // Отделы. Наполнение кабинетов уточняется: у отдела можно задать
-  // lead — подзаголовок кабинета, widgets — карточки разделов [{title, text}],
+  // widgets — карточки разделов [{title, text}],
   // cloud — картинка для облака точек справа в кабинете: {src, leftBoost — во сколько раз
   // поднять яркость у левого края, если объект на картинке слева темнее, exposure — общий
   // множитель яркости, contrast — сделать грани чётче, а светлые точки ярче}
@@ -27,7 +37,7 @@
     ecology:{name:'Экология', cloud:{src:'assets/departments/ecology.jpg'}}
   };
 
-  // Стартовый администратор: 1cem1nt / 1cem1nt
+  // Стартовый администратор: 1cem1nt / 1cem1nt. Гость входит без пароля — кнопкой на странице входа
   const seedUsers = [
     {login:'1cem1nt', password:'plain:1cem1nt', lastName:'Администратор', firstName:'', role:'admin', department:'engineering', createdAt:'2026-10-23T00:00:00.000Z'}
   ];
@@ -94,23 +104,56 @@
 
   function newUserError(data, users) {
     if (!loginPattern.test(normalizeLogin(data.login))) return 'Логин: 3–32 символа — латиница, цифры, точка, дефис или подчёркивание';
-    if (users.some(item => item.login === normalizeLogin(data.login))) return 'Такой логин уже занят';
+    if (normalizeLogin(data.login) === guestLogin || users.some(item => item.login === normalizeLogin(data.login))) return 'Такой логин уже занят';
     if (!cleanName(data.lastName) || !cleanName(data.firstName)) return 'Укажите фамилию и имя';
     return passwordError(data.password) || (departments[data.department] ? '' : 'Выберите отдел');
   }
 
   function sessionLogin() {
     const session = read(sessionKey);
-    return session && session.login;
+    return session && !session.guest ? session.login : null;
   }
 
   function startSession(login) {
     write(sessionKey, {login, at:Date.now()});
   }
 
-  function adminError() {
-    const actor = loadUsers().find(user => user.login === sessionLogin());
-    return actor && actor.role === 'admin' ? '' : 'Действие доступно только администратору';
+  function guestSession() {
+    const session = read(sessionKey);
+    return session && session.guest ? session : null;
+  }
+
+  function startGuestSession(department) {
+    write(sessionKey, {guest:true, department:departments[department] ? department : Object.keys(departments)[0], at:Date.now()});
+  }
+
+  function guestUser(session) {
+    return {login:guestLogin, lastName:'Гость', firstName:'', role:'guest', department:session.department, createdAt:new Date(session.at).toISOString()};
+  }
+
+  function sessionActor(users) {
+    return users.find(user => user.login === sessionLogin()) || null;
+  }
+
+  // Администратор меняет всех; администратор отдела — людей своего отдела, кроме администраторов
+  function canManage(actor, target) {
+    if (!actor || !target) return false;
+    if (actor.role === 'admin') return true;
+    return actor.role === 'deptAdmin' && target.department === actor.department && target.role !== 'admin';
+  }
+
+  function manageError(actor, target, changes = {}) {
+    if (guestSession()) return 'В гостевом режиме пользователей можно только смотреть';
+    if (!actor || !['admin', 'deptAdmin'].includes(actor.role)) return 'Действие доступно только администратору';
+    if (!canManage(actor, target)) return 'Можно менять только сотрудников своего отдела';
+    if (actor.role === 'deptAdmin') {
+      if (changes.department && changes.department !== actor.department) return 'Перевести в другой отдел может только администратор';
+      if (changes.role === 'admin') return 'Назначить администратора может только администратор';
+      if (changes.role && target.login === actor.login) return 'Свою роль может менять только администратор';
+    }
+    if (changes.role && !assignableRoles[changes.role]) return 'Неизвестная роль';
+    if (changes.department && !departments[changes.department]) return 'Неизвестный отдел';
+    return '';
   }
 
   function adminCount(users) {
@@ -123,13 +166,29 @@
 
   const Auth = {
     roles,
+    assignableRoles,
     departments,
     minPassword,
 
     currentUser() {
+      const guest = guestSession();
+      if (guest) return publicUser(guestUser(guest));
       const login = sessionLogin();
       const user = login && loadUsers().find(item => item.login === login);
       return user ? publicUser(user) : null;
+    },
+
+    loginAsGuest(department) {
+      startGuestSession(department);
+      return {ok:true, user:this.currentUser()};
+    },
+
+    // Гость сам выбирает, кабинет какого отдела смотреть
+    setGuestDepartment(department) {
+      if (!guestSession()) return {ok:false, error:'Выбор отдела доступен только гостю'};
+      if (!departments[department]) return {ok:false, error:'Неизвестный отдел'};
+      startGuestSession(department);
+      return {ok:true, user:this.currentUser()};
     },
 
     // Без входа — на страницу входа, без нужного доступа — в личный кабинет
@@ -142,6 +201,15 @@
 
     can(user, access) {
       return Boolean(user) && user.access.includes(access);
+    },
+
+    canEditUsers(user) {
+      return Boolean(user) && ['admin', 'deptAdmin'].includes(user.role);
+    },
+
+    // Для интерфейса: может ли текущий пользователь менять target. Сами действия проверяются ещё раз
+    canManage(target) {
+      return !guestSession() && canManage(sessionActor(loadUsers()), target);
     },
 
     findUser(login) {
@@ -201,6 +269,7 @@
     },
 
     async changePassword(current, password) {
+      if (guestSession()) return {ok:false, error:guestOnlyError};
       const users = loadUsers();
       const user = users.find(item => item.login === sessionLogin());
       if (!user) return {ok:false, error:'Сессия истекла, войдите снова'};
@@ -213,6 +282,7 @@
     },
 
     updateProfile({lastName, firstName}) {
+      if (guestSession()) return {ok:false, error:guestOnlyError};
       const users = loadUsers();
       const user = users.find(item => item.login === sessionLogin());
       if (!user) return {ok:false, error:'Сессия истекла, войдите снова'};
@@ -231,21 +301,21 @@
         .sort((a, b) => this.fullName(a).localeCompare(this.fullName(b), 'ru'));
     },
 
-    // Заявки на подтверждение — первыми
+    // По отделам в порядке departments, внутри отдела заявки на подтверждение — первыми
     listUsers() {
+      const order = Object.keys(departments);
+      const rank = user => order.indexOf(user.department) + 1 || order.length + 1;
       return loadUsers()
         .map(publicUser)
-        .sort((a, b) => (a.role !== 'pending') - (b.role !== 'pending') || this.fullName(a).localeCompare(this.fullName(b), 'ru'));
+        .sort((a, b) => rank(a) - rank(b) || (a.role !== 'pending') - (b.role !== 'pending') || this.fullName(a).localeCompare(this.fullName(b), 'ru'));
     },
 
     updateUser(login, changes) {
-      const denied = adminError();
-      if (denied) return {ok:false, error:denied};
       const users = loadUsers();
       const user = users.find(item => item.login === normalizeLogin(login));
       if (!user) return {ok:false, error:'Пользователь не найден'};
-      if (changes.role && !roles[changes.role]) return {ok:false, error:'Неизвестная роль'};
-      if (changes.department && !departments[changes.department]) return {ok:false, error:'Неизвестный отдел'};
+      const denied = manageError(sessionActor(users), user, changes);
+      if (denied) return {ok:false, error:denied};
       if (user.role === 'admin' && changes.role && changes.role !== 'admin' && adminCount(users) === 1) {
         return {ok:false, error:'Должен остаться хотя бы один администратор'};
       }
@@ -256,10 +326,11 @@
     },
 
     async createUser(data) {
-      const denied = adminError();
-      if (denied) return {ok:false, error:denied};
       const users = loadUsers();
-      const error = newUserError(data, users) || (roles[data.role] ? '' : 'Выберите роль');
+      const draft = {department:data.department, role:data.role};
+      const denied = manageError(sessionActor(users), draft, draft);
+      if (denied) return {ok:false, error:denied};
+      const error = newUserError(data, users) || (assignableRoles[data.role] ? '' : 'Выберите роль');
       if (error) return {ok:false, error};
       const login = normalizeLogin(data.login);
       const user = {
@@ -277,11 +348,11 @@
     },
 
     deleteUser(login) {
-      const denied = adminError();
-      if (denied) return {ok:false, error:denied};
       const users = loadUsers();
       const index = users.findIndex(item => item.login === normalizeLogin(login));
       if (index === -1) return {ok:false, error:'Пользователь не найден'};
+      const denied = manageError(sessionActor(users), users[index]);
+      if (denied) return {ok:false, error:denied};
       if (users[index].login === sessionLogin()) return {ok:false, error:'Нельзя удалить свою учётную запись'};
       if (users[index].role === 'admin' && adminCount(users) === 1) return {ok:false, error:'Должен остаться хотя бы один администратор'};
       users.splice(index, 1);
@@ -299,7 +370,7 @@
 
     // Возврат после входа — только на свои страницы
     safeNext(next) {
-      return /^(index|account)\.html(#[\w-]*)?$/.test(next || '') ? next : 'index.html';
+      return /^(index|account|news)\.html(\?[\w=&%.-]*)?(#[\w-]*)?$/.test(next || '') ? next : 'index.html';
     }
   };
 
