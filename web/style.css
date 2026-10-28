@@ -2739,19 +2739,33 @@ select {
   animation-play-state: paused;
 }
 
-/* Заливка выходит за экран на 120px сверху и снизу: под полупрозрачными и прячущимися панелями
-   браузера на телефоне интерфейс не проглядывает. Сцена остаётся по центру экрана, свайпы
+/* Заливка выше и ниже экрана на --pt-bleed и высотой с экран без панелей браузера (100lvh),
+   сцена — по центру видимой части (--pt-view, высота окна из transition.js). Свайпы и колесо
    по заливке не прокручивают страницу под ней */
 .page-transition {
+  --pt-bleed: 160px;
   position: fixed;
-  inset: -120px 0;
+  top: calc(-1 * var(--pt-bleed));
+  left: 0;
   z-index: 10000;
-  display: grid;
-  place-items: center;
-  padding: 136px 16px;
+  width: 100%;
+  height: calc(100vh + 2 * var(--pt-bleed));
+  height: calc(100lvh + 2 * var(--pt-bleed));
   cursor: progress;
   touch-action: none;
   overscroll-behavior: none;
+}
+
+/* На телефонах и планшетах заливка — часть страницы, а не закреплённый слой: Safari на iPhone
+   (и Chrome там же) рисует под своими панелями сверху и снизу только содержимое страницы,
+   а закреплённые слои обрезает по видимой части. Слой стоит там, где сейчас прокрутка
+   (--pt-scroll), и сдвигается вместе с ней. На компьютере остаётся закреплённым — иначе
+   в Windows появилась бы полоса прокрутки и страница под заливкой дёрнулась */
+@media (pointer: coarse) {
+  .page-transition {
+    position: absolute;
+    top: calc(var(--pt-scroll, 0px) - var(--pt-bleed));
+  }
 }
 
 .page-transition.is-solid {
@@ -2766,11 +2780,14 @@ select {
 }
 
 .pt-scene {
-  position: relative;
+  position: absolute;
+  top: calc(var(--pt-bleed) + var(--pt-view, 100vh) / 2);
+  left: 50%;
   display: grid;
   justify-items: center;
   gap: 4px;
-  width: min(620px, 100%);
+  width: min(620px, 100% - 32px);
+  translate: -50% -50%;
   opacity: 0;
   transform: translateY(10px);
   transition: opacity .24s ease, transform .4s var(--ease-out);

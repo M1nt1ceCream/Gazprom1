@@ -386,11 +386,23 @@
       '</svg>';
   }
 
+  // Где сейчас прокрутка и какая видна высота: на телефоне заливка стоит в странице на месте
+  // прокрутки, сцена — по центру видимой части (см. .page-transition в style.css)
+  function place(overlay) {
+    overlay.style.setProperty('--pt-scroll', `${window.scrollY}px`);
+    overlay.style.setProperty('--pt-view', `${window.innerHeight}px`);
+  }
+
   function createOverlay(elapsed) {
     const overlay = document.createElement('div');
     overlay.className = 'page-transition';
     overlay.setAttribute('role', 'status');
     overlay.innerHTML = `<canvas class="pt-snow" aria-hidden="true"></canvas><div class="pt-scene">${scene(elapsed)}<p class="pt-caption">Пожалуйста, подождите</p></div>`;
+    place(overlay);
+    // Колесо и свайпы по заливке не прокручивают страницу под ней
+    const hold = event => event.preventDefault();
+    overlay.addEventListener('wheel', hold, {passive:false});
+    overlay.addEventListener('touchmove', hold, {passive:false});
     return overlay;
   }
 
@@ -505,6 +517,12 @@
     event.preventDefault();
     go(link.href, event.detail ? {origin:{x:event.clientX, y:event.clientY}} : {from:link});
   });
+
+  // Страница всё же прокрутилась (восстановление прокрутки, клавиатура) или панели браузера
+  // спрятались — заливка встаёт на новое место
+  const follow = () => document.querySelectorAll('.page-transition').forEach(place);
+  window.addEventListener('scroll', follow, {passive:true});
+  window.addEventListener('resize', follow);
 
   // Назад на карту из кэша страниц: убрать белый экран, который остался перед уходом
   window.addEventListener('pageshow', event => {
