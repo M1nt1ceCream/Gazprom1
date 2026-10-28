@@ -2728,7 +2728,9 @@ select {
 }
 
 /* Переход при входе и выходе (transition.js): белые снежинки, медведь и олень в лесу */
-:root.pt-enter {
+/* Пока экран белый, фон самой страницы тоже белый: на телефоне он виден за панелями браузера,
+   при оттягивании страницы и по бокам от выреза в альбомной ориентации */
+:root.pt-cover {
   background: #fff;
 }
 
@@ -2737,14 +2739,19 @@ select {
   animation-play-state: paused;
 }
 
+/* Заливка выходит за экран на 120px сверху и снизу: под полупрозрачными и прячущимися панелями
+   браузера на телефоне интерфейс не проглядывает. Сцена остаётся по центру экрана, свайпы
+   по заливке не прокручивают страницу под ней */
 .page-transition {
   position: fixed;
-  inset: 0;
+  inset: -120px 0;
   z-index: 10000;
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: 136px 16px;
   cursor: progress;
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .page-transition.is-solid {

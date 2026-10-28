@@ -148,6 +148,9 @@
   function playSnow(canvas, origin, reverse) {
     const dpr = pixelRatio();
     const width = canvas.clientWidth, height = canvas.clientHeight;
+    // origin — в координатах окна, а холст начинается выше экрана
+    const box = canvas.getBoundingClientRect();
+    origin = {x:origin.x - box.left, y:origin.y - box.top};
     const gap = flakeGap(width);
     const cell = flakeCell(gap, dpr);
     const atlas = bakeFlakes(cell);
@@ -423,6 +426,7 @@
     document.head.append(prefetch);
     if (!reduceMotion) await playSnow(overlay.querySelector('.pt-snow'), origin, false);
     overlay.classList.add('is-solid', 'show-scene');
+    document.documentElement.classList.add('pt-cover');
     tint('#ffffff');
     try {
       sessionStorage.setItem(storeKey, JSON.stringify({at:Date.now(), scene:sceneStart}));
@@ -457,7 +461,7 @@
       return;
     }
     const root = document.documentElement;
-    root.classList.add('pt-enter');
+    root.classList.add('pt-enter', 'pt-cover');
     tint('#ffffff');
     const overlay = createOverlay((Date.now() - state.scene) / 1000);
     overlay.classList.add('is-solid', 'show-scene');
@@ -475,7 +479,7 @@
         overlay.classList.remove('show-scene');
         await wait(timing.fade);
         overlay.querySelector('.pt-scene').hidden = true;
-        root.classList.remove('pt-enter');
+        root.classList.remove('pt-enter', 'pt-cover');
         tint();
         revealDone();
         if (!reduceMotion) {
@@ -506,7 +510,7 @@
   window.addEventListener('pageshow', event => {
     if (!event.persisted) return;
     document.querySelectorAll('.page-transition').forEach(overlay => overlay.remove());
-    document.documentElement.classList.remove('pt-enter');
+    document.documentElement.classList.remove('pt-enter', 'pt-cover');
     tint();
     busy = false;
   });
