@@ -1903,13 +1903,22 @@ select {
   container-type: inline-size;
 }
 
+/* Блок новостей (в кабинете и на странице всех новостей) чуть темнее белого, шапка на нём —
+   отдельная белая плашка; всё в 8px от краёв и друг от друга */
+.panel-box.news-panel {
+  background: var(--box-hover);
+}
+
+.panel-box.news-head {
+  padding: 16px 20px;
+}
+
 .panel-box.news-panel,
 .account-section .panel-box.news-panel {
   padding: 8px;
   border-radius: var(--radius-glass);
 }
 
-/* Текст шапки — на одной линии с подписями плиток (8px + 12px) */
 .news-head {
   display: flex;
   flex-wrap: wrap;
@@ -1917,7 +1926,6 @@ select {
   justify-content: space-between;
   gap: 10px 20px;
   margin-bottom: 8px;
-  padding: 12px 12px 6px;
 }
 
 .news-legend {
@@ -2261,13 +2269,15 @@ select {
   font-weight: 600;
 }
 
-/* Страница новости и всех новостей — одной ширины */
+/* Страница новости и всех новостей — одной ширины. Колонка minmax(0, 1fr): блок не шире экрана,
+   даже если внутри что-то просит больше (у обложки min-height через пропорцию превращается в min-width) */
 .news-page {
   position: relative;
   z-index: 1;
   max-width: 1240px;
   margin: 0 auto;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   padding: var(--stack-top) var(--gap) var(--gap);
 }
@@ -2300,10 +2310,12 @@ select {
   transform: translateX(-3px);
 }
 
-/* Как блок новостей: обложка в 8px от краёв, радиусы 22 / 14 идут параллельно */
-.panel-box.news-article {
+/* Новость: снаружи жидкое стекло, внутри обложка и отдельная белая плашка с текстом —
+   в 8px от краёв и друг от друга, радиусы 22 / 14 идут параллельно */
+.glass.news-article {
+  display: grid;
+  gap: 8px;
   padding: 8px;
-  border-radius: var(--radius-glass);
 }
 
 /* Обложка 16:9, но не выше окна под шапкой и «Все новости» — заголовок всегда виден,
@@ -2352,7 +2364,7 @@ select {
 
 /* Текст — на одной линии с заголовком на обложке, строки не длиннее ~80 знаков */
 .news-body {
-  padding: 22px 32px 16px;
+  padding: 24px 32px 20px;
 }
 
 .news-body > * {
@@ -2544,7 +2556,10 @@ select {
 }
 
 /* Таблица пользователей */
+/* position: relative — чтобы скрытая подпись «Действия» (position: absolute) оставалась внутри
+   прокрутки таблицы и не растягивала страницу на телефоне */
 .table-wrap {
+  position: relative;
   margin: 0 -22px;
   padding: 0 22px;
   overflow-x: auto;
@@ -2709,6 +2724,114 @@ select {
   }
   to {
     box-shadow: 0 0 0 7px #d79b4600;
+  }
+}
+
+/* Переход при входе и выходе (transition.js): белые снежинки, медведь и олень в лесу */
+:root.pt-enter {
+  background: #fff;
+}
+
+/* Пока страницу закрывает переход, анимации появления ждут и играют уже на открытии */
+.pt-enter body * {
+  animation-play-state: paused;
+}
+
+.page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  cursor: progress;
+}
+
+.page-transition.is-solid {
+  background: #fff;
+}
+
+.pt-snow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.pt-scene {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: min(620px, 100%);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .24s ease, transform .4s var(--ease-out);
+}
+
+.page-transition.show-scene .pt-scene {
+  opacity: 1;
+  transform: none;
+}
+
+.pt-scene svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 640 / 280;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+}
+
+.pt-forest,
+.pt-trail {
+  fill: none;
+  stroke: #a6b6cd;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pt-forest .pt-fill {
+  fill: #fff;
+}
+
+.pt-trail {
+  stroke: #c3cfdf;
+}
+
+.pt-animal {
+  fill: #fff;
+  stroke: #2c4470;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pt-animal .pt-open {
+  fill: none;
+}
+
+/* Дальние ноги и рог светлее — так видно, что они за телом */
+.pt-animal .pt-far {
+  stroke: #9fb0c8;
+}
+
+.pt-animal .pt-ink {
+  fill: #2c4470;
+  stroke: none;
+}
+
+.pt-caption {
+  margin: 0;
+  color: #7d8fac;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .02em;
+}
+
+@media (max-width: 560px) {
+  .pt-scene svg {
+    aspect-ratio: 440 / 280;
   }
 }
 
@@ -2972,11 +3095,16 @@ select {
 
   .news-hero {
     aspect-ratio: 4 / 3;
+    min-height: 0;
     padding: 18px;
   }
 
   .news-body {
-    padding: 16px 18px 10px;
+    padding: 18px 18px 14px;
+  }
+
+  .panel-box.news-head {
+    padding: 14px 16px;
   }
 
   .upload {

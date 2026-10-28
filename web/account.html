@@ -7,12 +7,14 @@
   <title>Газпром 1 — личный кабинет</title>
   <script src="auth.js"></script>
   <script>Auth.requireUser();</script>
+  <script src="transition.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-account">
+  <script>PageTransition.resume();</script>
   <canvas class="cloud cloud-full" data-cloud-field data-cloud-density="0.45" data-cloud-motion="wave" data-cloud-point-scale="0.8" aria-hidden="true"></canvas>
   <header class="topbar">
     <div class="topbar-start">
@@ -34,7 +36,7 @@
         <span class="avatar" data-user-initials></span>
         <span class="user-chip-copy"><b data-user-name></b><small data-user-role></small></span>
       </a>
-      <button id="logout" class="header-button" type="button" title="Выйти из учётной записи">
+      <button id="logout" class="header-button" type="button" title="Выйти из учётной записи" data-transition>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11"/></svg>
         <span>Выйти</span>
       </button>
@@ -133,7 +135,7 @@
 
       <section class="account-section" data-section="news" hidden>
         <div id="dept-news" class="panel-box news-panel" hidden>
-          <div class="box-head news-head">
+          <div class="panel-box news-head">
             <div>
               <h1 class="section-title">Новости</h1>
               <p class="section-lead">Сообщения других отделов для КМНС</p>

@@ -66,6 +66,8 @@ if (currentUser) {
   userChip.hidden = false;
 } else {
   document.getElementById('login-link').hidden = false;
+  // Без входа «Кабинет» уводит на страницу входа — тоже с переходом
+  document.querySelector('.topnav a[href="account.html"]').dataset.transition = '';
 }
 
 sidebarToggle.addEventListener('click', () => {

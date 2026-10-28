@@ -48,9 +48,9 @@ function renderAll() {
   document.getElementById('news-all').hidden = false;
 }
 
-document.getElementById('logout').addEventListener('click', () => {
+document.getElementById('logout').addEventListener('click', event => {
   Auth.logout();
-  location.replace('login.html');
+  PageTransition.go('login.html', {from:event.currentTarget, replace:true});
 });
 
 if (user) {

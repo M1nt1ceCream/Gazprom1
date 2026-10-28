@@ -7,6 +7,7 @@
   <meta name="description" content="Газпром 1 — интерактивная карта Обской губы на OpenStreetMap с объектами из открытых данных OSM.">
   <title>Газпром 1 — интерактивная карта</title>
   <script src="auth.js"></script>
+  <script src="transition.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,6 +15,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-map">
+  <script>PageTransition.resume();</script>
   <header class="topbar">
     <div class="topbar-start">
       <a class="brand" href="#" aria-label="Газпром 1 — на главную">
@@ -46,7 +48,7 @@
         <span>Обновить</span>
       </button>
       <a id="user-chip" class="user-chip" href="account.html" aria-label="Личный кабинет" hidden><span class="avatar"></span></a>
-      <a id="login-link" class="btn header-login" href="login.html?next=index.html" hidden>
+      <a id="login-link" class="btn header-login" href="login.html?next=index.html" data-transition hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M14 17l5-5-5-5M19 12H8"/></svg>
         <span>Войти</span>
       </a>

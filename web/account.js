@@ -388,9 +388,9 @@ newsForm.addEventListener('submit', async e => {
   showToast('Новость опубликована');
 });
 
-document.getElementById('logout').addEventListener('click', () => {
+document.getElementById('logout').addEventListener('click', event => {
   Auth.logout();
-  location.replace('login.html');
+  PageTransition.go('login.html', {from:event.currentTarget, replace:true});
 });
 
 window.addEventListener('hashchange', () => showSection(location.hash.slice(1)));
