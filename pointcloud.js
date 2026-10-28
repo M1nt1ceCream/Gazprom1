@@ -295,7 +295,7 @@
       morphStarted = performance.now();
     }
 
-    async function show(src, options = {}) {
+    async function show(src, options = {}, after) {
       const ticket = ++request;
       const key = src && `${src}|${JSON.stringify(options)}`;
       let next = src ? cache.get(key) : null;
@@ -305,6 +305,7 @@
         next = samplePoints(image, count, options);
         cache.set(key, next);
       }
+      if (after) await after;
       if (ticket === request) morphTo(next || (field ? fieldState(count) : scatterState(count)));
     }
 
@@ -352,13 +353,16 @@
     requestAnimationFrame(frame);
 
     canvas.cloud = {show:(src, options) => show(src, options).catch(error => console.warn('Облако точек не обновилось:', error))};
+    // Пока страницу закрывает переход (transition.js), картинка уже разобрана на точки,
+    // а слетаются они (или расходятся полем) вместе с открытием страницы
+    const revealed = window.PageTransition ? window.PageTransition.revealed : null;
     const initial = {invert:canvas.dataset.cloudInvert !== undefined};
     for (const name of ['leftBoost', 'exposure', 'contrast']) {
       const value = parseFloat(canvas.dataset[`cloud${name[0].toUpperCase()}${name.slice(1)}`]);
       if (value) initial[name] = value;
     }
-    if (canvas.dataset.cloudSrc) canvas.cloud.show(canvas.dataset.cloudSrc, initial);
-    else if (field) canvas.cloud.show(null);
+    if (canvas.dataset.cloudSrc) show(canvas.dataset.cloudSrc, initial, revealed).catch(error => console.warn('Облако точек не обновилось:', error));
+    else if (field) show(null, {}, revealed).catch(error => console.warn('Облако точек не обновилось:', error));
   }
 
   document.querySelectorAll('canvas.cloud').forEach(canvas => {

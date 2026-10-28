@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#013c81">
   <title>Газпром 1 — вход</title>
+  <script src="transition.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="page-auth">
+  <script>PageTransition.resume();</script>
   <canvas class="cloud cloud-login" data-cloud-src="assets/backgrounds/common%201.jpg" data-cloud-motion="wave" data-cloud-fit="cover" data-cloud-invert data-cloud-point-scale="0.75" aria-hidden="true"></canvas>
 
   <main class="auth">
@@ -49,7 +51,7 @@
           </label>
           <button id="forgot-link" class="link-button forgot-link" type="button">Забыли пароль?</button>
           <p id="login-message" class="form-message" role="alert"></p>
-          <button class="btn btn-block" type="submit">Войти</button>
+          <button class="btn btn-block" type="submit" data-transition>Войти</button>
         </form>
 
         <form id="panel-register" class="form tab-panel" role="tabpanel" aria-labelledby="tab-register" novalidate hidden>
@@ -83,7 +85,7 @@
             <input class="input" name="repeat" type="password" autocomplete="new-password" required>
           </label>
           <p id="register-message" class="form-message" role="alert"></p>
-          <button class="btn btn-block" type="submit">Зарегистрироваться</button>
+          <button class="btn btn-block" type="submit" data-transition>Зарегистрироваться</button>
         </form>
 
         <div id="panel-reset" class="tab-panel" role="region" aria-label="Восстановление пароля" hidden>
@@ -131,7 +133,7 @@
 
         <div id="guest-entry" class="guest-entry">
           <span class="divider">или</span>
-          <button id="guest-login" class="btn btn-block btn-guest" type="button">
+          <button id="guest-login" class="btn btn-block btn-guest" type="button" data-transition>
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
             <span>Войти как гость</span>
           </button>

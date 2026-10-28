@@ -76,7 +76,7 @@ loginForm.addEventListener('submit', async e => {
   const result = await Auth.login(loginName.value, loginPassword.value);
   button.disabled = false;
   if (result.ok) {
-    location.replace(next);
+    PageTransition.go(next, {from:button, replace:true});
     return;
   }
   showMessage(loginMessage, result.error);
@@ -101,7 +101,7 @@ registerForm.addEventListener('submit', async e => {
     showMessage(registerMessage, result.error);
     return;
   }
-  location.replace('account.html');
+  PageTransition.go('account.html', {from:registerForm.querySelector('[type="submit"]'), replace:true});
 });
 
 findForm.addEventListener('submit', e => {
@@ -149,7 +149,7 @@ document.getElementById('forgot-link').addEventListener('click', () => {
 document.getElementById('back-to-login').addEventListener('click', () => setTab('login'));
 
 // Гость сразу попадает в новости, отдел выбирает в карточке слева
-document.getElementById('guest-login').addEventListener('click', () => {
+document.getElementById('guest-login').addEventListener('click', event => {
   Auth.loginAsGuest();
-  location.replace('account.html#news');
+  PageTransition.go('account.html#news', {from:event.currentTarget, replace:true});
 });
