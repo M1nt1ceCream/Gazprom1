@@ -16,6 +16,8 @@ const categoryStyles = {
 };
 const map = L.map('map', {zoomControl:false, preferCanvas:true}).setView(center, 6);
 L.control.zoom({position:'bottomright'}).addTo(map);
+// Без подписи «Leaflet» с флагом: в углу остаётся только обязательная ссылка на OpenStreetMap
+map.attributionControl.setPrefix(false);
 
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom:19,
